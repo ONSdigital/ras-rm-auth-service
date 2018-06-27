@@ -1,0 +1,15 @@
+---
+applications:
+- name: ras-rm-auth-service
+  health-check-type: http
+  health-check-http-endpoint: /health
+  memory: 256M
+  services:
+    - oauth-db
+  env:
+    DEBUG: "False"
+    TESTING: "False"
+    DJANGO_SETTINGS_MODULE: ras_rm_auth_service.settings.default
+    DATABASE_SCHEMA: "ras_rm_auth"
+
+
