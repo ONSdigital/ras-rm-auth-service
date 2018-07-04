@@ -3,6 +3,7 @@ import cfenv
 import logging
 import os
 
+from ras_rm_auth_service.ras_rm_auth_service.settings.default import get_default_db_configuration
 
 stdlogger = logging.getLogger(__name__)
 
@@ -12,8 +13,8 @@ DB_HOST = 'localhost'
 DB_NAME = 'postgres'
 DB_USERNAME = 'postgres'
 DB_PASSWORD = 'postgres'
-DB_PORT = '6432'
-DB_SCHEMA = os.getenv('DATABASE_SCHEMA', 'public')
+DB_PORT = os.getenv('DB_PORT', '6432')
+DB_SCHEMA = os.getenv('DB_SCHEMA', 'public')
 
 if 'VCAP_SERVICES' in os.environ:
     stdlogger.info('VCAP_SERVICES found in environment')
@@ -26,8 +27,16 @@ if 'VCAP_SERVICES' in os.environ:
     DB_PASSWORD = credentials.get('password', 'postgres')
     DB_PORT = '5432'
 
-db1 = psycopg2.connect(database=DB_NAME, user=DB_USERNAME,
-                       password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
+database = get_default_db_configuration()
+
+db1 = psycopg2.connect(
+    database=database.get("NAME"),
+    user=database.get("USER"),
+    password=database.get("PASSWORD"),
+    host=database.get("HOST"),
+    port=database.get("PORT")
+)
+
 cursor = db1.cursor()
 sql = f'CREATE SCHEMA IF NOT EXISTS {DB_SCHEMA};'
 cursor.execute(sql)

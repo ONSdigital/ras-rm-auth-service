@@ -16,34 +16,8 @@ import cfenv
 
 stdlogger = logging.getLogger(__name__)
 
-DB_HOST = ''
-DB_NAME = ''
-DB_USERNAME = ''
-DB_PASSWORD = ''
-DB_PORT = '6432'
-
-if 'VCAP_SERVICES' in os.environ:
-    stdlogger.info('VCAP_SERVICES found in environment')
-
-    cf_env = cfenv.AppEnv()
-    credentials = cf_env.services[0].credentials
-    DB_HOST = credentials.get('host')
-    DB_NAME = credentials.get('db_name')
-    DB_USERNAME = credentials.get('username')
-    DB_PASSWORD = credentials.get('password')
-    DB_PORT = '5432'
-
-else:
-    DB_HOST = 'localhost'
-    DB_NAME = 'postgres'
-    DB_USERNAME = 'postgres'
-    DB_PASSWORD = 'postgres'
-    stdlogger.info('VCAP_SERVICES NOT found in environment.')
-
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -98,12 +72,29 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ras_rm_auth_service.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-db_schema = os.environ.get('DATABASE_SCHEMA', 'public')
+def get_default_db_configuration():
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_NAME = os.getenv('DB_NAME', 'postgres')
+    DB_USERNAME = os.getenv('DB_USERNAME', 'postgres')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
+    DB_PORT = os.getenv('DB_PORT', '6432')
+    DB_SCHEMA = os.getenv('DB_SCHEMA', 'public')
 
-DATABASES = {
-    'default': {
+    if 'VCAP_SERVICES' in os.environ:
+        stdlogger.info('VCAP_SERVICES found in environment')
+
+        cf_env = cfenv.AppEnv()
+        credentials = cf_env.services[0].credentials
+        DB_HOST = credentials.get('host')
+        DB_NAME = credentials.get('db_name')
+        DB_USERNAME = credentials.get('username')
+        DB_PASSWORD = credentials.get('password')
+        DB_PORT = '5432'
+
+    # Database
+    # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
+
+    return {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': f'{DB_NAME}',
         'USER': f'{DB_USERNAME}',
@@ -111,9 +102,13 @@ DATABASES = {
         'HOST': f'{DB_HOST}',
         'PORT': f'{DB_PORT}',
         'OPTIONS': {
-            'options': f'-c search_path={db_schema}'
-        },
-    },
+            'options': f'-c search_path={DB_SCHEMA}'
+        }
+    }
+
+
+DATABASES = {
+    'default': get_default_db_configuration()
 }
 
 AUTH_USER_MODEL = 'authentication.User'
@@ -136,7 +131,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -149,7 +143,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -186,7 +179,7 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'filters': ['require_debug_true'],
-            #'filters': [],                      # Allow all logs to pass to console
+            # 'filters': [],                      # Allow all logs to pass to console
             'class': 'logging.StreamHandler',
             'formatter': 'ons'
         },
@@ -220,8 +213,8 @@ LOGGING = {
         },
         'proj_logfile': {
             'level': 'DEBUG',
-            #'filters': ['require_debug_false','require_debug_true'],
-            'filters':[],                           # Allow all 'proj' related logs to be sent to this project folder
+            # 'filters': ['require_debug_false','require_debug_true'],
+            'filters': [],  # Allow all 'proj' related logs to be sent to this project folder
             'class': 'logging.FileHandler',
             'filename': 'oauth2_proj.log',
             'formatter': 'verbose'

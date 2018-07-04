@@ -10,6 +10,6 @@ applications:
     DEBUG: "False"
     TESTING: "False"
     DJANGO_SETTINGS_MODULE: ras_rm_auth_service.settings.default
-    DATABASE_SCHEMA: "ras_rm_auth"
+    DB_SCHEMA: "ras_rm_auth"
 
 

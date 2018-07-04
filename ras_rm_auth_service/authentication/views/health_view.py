@@ -2,7 +2,6 @@ from django.http import JsonResponse, QueryDict
 from django.views import View
 import logging
 
-
 stdlogger = logging.getLogger(__name__)
 
 
