@@ -8,7 +8,14 @@ from ..models import User
 
 class TokenView(View):
     def post(self, request):
-        user = authenticate(username=request.POST.get('username'), password=request.POST.get('password'))
+        users = User.objects.filter(username=request.POST.get('username'))
+        user = None
+
+        if len(users) > 0:
+            user = users[0]
+
+        if user is not None and not pwd_context.verify(secret=request.POST.get('password'), hash=user.alternative_hash):
+            user = None
 
         if user is None or not user.is_verified:
             return JsonResponse(data={"detail": "User account not verified"}, status=401)

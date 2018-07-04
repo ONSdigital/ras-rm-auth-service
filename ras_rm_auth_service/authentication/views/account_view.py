@@ -2,9 +2,10 @@ from distutils.util import strtobool
 
 from django.http import JsonResponse, QueryDict
 from django.views import View
-from ..models import User
-import logging
 
+from ..models import User
+from ..encryption import pwd_context
+import logging
 
 stdlogger = logging.getLogger(__name__)
 
@@ -15,8 +16,9 @@ class AccountView(View):
         stdlogger.debug("Create account")
         user = User.objects.create_user(
             username=request.POST.get('username'),
-            password=request.POST.get('password')
         )
+        user.alternative_hash = pwd_context.encrypt(secret=request.POST.get('password'))
+
         user.save()
 
         return JsonResponse(data={"account": user.username, "created": "success"}, status=201)
