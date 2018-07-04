@@ -22,6 +22,6 @@ from authentication.views.health_view import HealthView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/account/create', AccountView.as_view()),
-    path('api/v1/tokens', TokenView.as_view()),
+    path('api/v1/tokens/', TokenView.as_view()),
     path('health', HealthView.as_view()),
 ]

@@ -72,9 +72,12 @@ class UserControllerTests(TestCase):
 
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "password",
                      "client_id": "ons@ons.gov.uk", "client_secret": "password"}
-        response = self.client.post('/api/v1/tokens', form_data)
+        response = self.client.post('/api/v1/tokens/', urlencode(form_data),
+                                    content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 201)
-
+        self.assertEqual(json.loads(response.content),
+                         {"id": 895725, "access_token": "fakefake-4bc1-4254-b43a-f44791ecec75", "expires_in": 3600,
+                          "token_type": "Bearer", "scope": "", "refresh_token": "fakefake-2151-4b11-b0d5-a9a68f2c53de"})
 
     def test_user_must_verify_with_true_or_false(self):
         """
@@ -114,7 +117,7 @@ class UserControllerTests(TestCase):
         # When
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "password",
                      "client_id": "ons@ons.gov.uk", "client_secret": "password"}
-        response = self.client.post('/api/v1/tokens', form_data, content_type="application/json")
+        response = self.client.post('/api/v1/tokens/', form_data, content_type="application/json")
 
         # Then
         self.assertEqual(response.status_code, 401)
@@ -145,7 +148,8 @@ class UserControllerTests(TestCase):
 
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "wrongpassword",
                      "client_id": "ons@ons.gov.uk", "client_secret": "password"}
-        response = self.client.post('/api/v1/tokens', form_data)
+        response = self.client.post('/api/v1/tokens/', urlencode(form_data),
+                                    content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 401)
 
     def test_health(self):

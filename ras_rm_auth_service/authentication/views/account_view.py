@@ -27,17 +27,16 @@ class AccountView(View):
         users = User.objects.filter(username=put_params.get('username'))
 
         if len(users) < 1:
-            return JsonResponse(data={
-                "detail": "Unknown user credentials. This user does not exist on the OAuth2 server"
-            }, status=401)
+            return JsonResponse(
+                data={"detail": "Unknown user credentials. This user does not exist on the OAuth2 server"},
+                status=401,
+            )
 
         user = users[0]
         try:
             user.is_verified = strtobool(put_params.get('account_verified'))
         except ValueError as e:
-            return JsonResponse(data={
-                "detail": "account_verified status is invalid"
-            }, status=400)
+            return JsonResponse(data={"detail": "account_verified status is invalid"}, status=400)
 
         user.save()
 
