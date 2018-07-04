@@ -1,9 +1,8 @@
+import base64
 import json
 from urllib.parse import urlencode
 
 from django.test import TestCase
-from django.test.client import MULTIPART_CONTENT, BOUNDARY, encode_multipart
-import base64
 
 
 # curl - X POST http: // localhost: 8040 / api / account / create / -u ons @ ons.gov: password \

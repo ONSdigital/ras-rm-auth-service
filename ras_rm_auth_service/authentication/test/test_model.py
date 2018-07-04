@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import User
+from ..models import User, UserManager
 
 
 class UserTestCase(TestCase):
@@ -21,3 +21,12 @@ class UserTestCase(TestCase):
         user.alternative_hash = '$pbkdf2-sha256$29000$N2YMIWQsBWBMae09x1jrPQ$1t8iyB2A.WF/Z5JZv.lfCIhXXN33N23OSgQYThBYRfk'
         self.assertEqual('$pbkdf2-sha256$29000$N2YMIWQsBWBMae09x1jrPQ$1t8iyB2A.WF/Z5JZv.lfCIhXXN33N23OSgQYThBYRfk',
                          user.alternative_hash)
+
+    def test_username_field_returns_set_value_if_set(self):
+        user = User.objects.create_user(username="test")
+        user.username = "another"
+        self.assertEqual("another", user.username)
+
+    def test_user_defaults_username_to_username_from_create(self):
+        user = User.objects.create_user(username="test")
+        self.assertEqual("test", user.username)

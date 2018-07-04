@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.contrib.auth import authenticate
 
-from ..encryption import pwd_context
+from ..encryption import passlib_context
 from ..models import User
 
 
@@ -14,7 +14,7 @@ class TokenView(View):
         if len(users) > 0:
             user = users[0]
 
-        if user is not None and not pwd_context.verify(secret=request.POST.get('password'), hash=user.alternative_hash):
+        if user is not None and not passlib_context.verify(secret=request.POST.get('password'), hash=user.alternative_hash):
             user = None
 
         if user is None or not user.is_verified:
