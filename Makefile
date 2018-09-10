@@ -2,9 +2,17 @@
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-run:
-	DB_SCHEMA=ras_rm_oauth bash ./init_db.sh
-	DB_SCHEMA=ras_rm_oauth DJANGO_SETTINGS_MODULE=ras_rm_auth_service.settings.default pipenv run gunicorn --bind 0.0.0.0:8040 --workers 8 ras_rm_auth_service.wsgi --pythonpath 'ras_rm_auth_service'
+install:
+	pipenv install --dev
 
-test: ## run all tests
-	pipenv run ras_rm_auth_service/manage.py test authentication
+lint:
+	pipenv run flake8 --max-line-length=120 --max-complexity=10 .
+
+test: lint
+	pipenv run pytest
+
+run:
+	pipenv run python run.py
+
+docker:
+	docker build . -t sdcplatform/ras-rm-auth-service:latest

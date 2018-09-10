@@ -1,1 +1,1 @@
-web: bash ./init_db.sh; gunicorn --bind 0.0.0.0:$PORT --workers 8 ras_rm_auth_service.wsgi --pythonpath 'ras_rm_auth_service'
+web: gunicorn -b 0.0.0.0:$PORT --workers 8 --worker-class gevent --worker-connections 1000 --timeout 30 --keep-alive 2 "run:create_app()"
