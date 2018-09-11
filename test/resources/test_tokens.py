@@ -1,3 +1,4 @@
+import base64
 import unittest
 
 from ras_rm_auth_service.models import models
@@ -13,6 +14,11 @@ class TestTokens(unittest.TestCase):
         app.db.session.commit()
         self.client = app.test_client()
 
+        auth = "{}:{}".format('admin', 'secret').encode('utf-8')
+        self.headers = {
+            'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
+        }
+
     def test_verifed_user_can_login(self):
         """
         Given a user account has been created but not verified
@@ -21,19 +27,19 @@ class TestTokens(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
 
         form_data = {"username": "testuser@email.com",
                      "account_verified": "true"}
-        response = self.client.put('/api/account/create', data=form_data)
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 201)
 
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "password"}
-        response = self.client.post('/api/v1/tokens/', data=form_data)
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.get_json(),
                          {"id": 895725, "access_token": "fakefake-4bc1-4254-b43a-f44791ecec75", "expires_in": 3600,
@@ -47,11 +53,11 @@ class TestTokens(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "password"}
-        response = self.client.post('/api/v1/tokens/', data=form_data)
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 401)
@@ -65,18 +71,18 @@ class TestTokens(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
 
         form_data = {"username": "testuser@email.com", "account_verified": "true"}
-        response = self.client.put('/api/account/create', data=form_data)
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 201)
 
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "wrongpassword"}
-        response = self.client.post('/api/v1/tokens/', data=form_data)
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
 
     def test_user_does_not_exist(self):
@@ -90,7 +96,7 @@ class TestTokens(unittest.TestCase):
 
         # When
         form_data = {"grant_type": "password", "username": "testuser@email.com", "password": "password"}
-        response = self.client.post('/api/v1/tokens/', data=form_data)
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 401)

@@ -34,7 +34,7 @@ def create_app(config=None):
 
     try:
         initialise_db(app)
-    except RetryError:
+    except RetryError as e:
         logger.exception('Failed to initialise database')
         exit(1)
 

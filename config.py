@@ -13,8 +13,8 @@ class Config(object):
     DATABASE_SCHEMA = 'auth'
     PORT = os.getenv('PORT', 8041)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
-    # SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
-    # SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
 
     DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', 5))
     DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', 10))
@@ -29,10 +29,13 @@ class Config(object):
 class DevelopmentConfig(Config):
     DEBUG = True
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'DEBUG')
-    # SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
-    # SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
 
 
-class TestingConfig(DevelopmentConfig):
+class TestingConfig(Config):
     DEBUG = True
     Testing = True
+    SECURITY_USER_NAME = 'admin'
+    SECURITY_USER_PASSWORD = 'secret'
+    DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgres://postgres:postgres@localhost:6432/postgres")

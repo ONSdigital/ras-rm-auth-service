@@ -4,12 +4,19 @@ import structlog
 from flask import Blueprint, make_response, request, jsonify
 from passlib.hash import bcrypt
 
+from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import non_transactional_session
 from ras_rm_auth_service.models.models import User
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 tokens = Blueprint('tokens_view', __name__, url_prefix='/api/v1/tokens')
+
+
+@tokens.before_request
+@auth.login_required
+def before_tokens_view():
+    pass
 
 
 @tokens.route('/', methods=['POST'])

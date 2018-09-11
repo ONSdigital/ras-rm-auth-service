@@ -1,3 +1,4 @@
+import base64
 import unittest
 from unittest.mock import patch
 
@@ -16,13 +17,18 @@ class TestAccount(unittest.TestCase):
         app.db.session.commit()
         self.client = app.test_client()
 
+        auth = "{}:{}".format('admin', 'secret').encode('utf-8')
+        self.headers = {
+            'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
+        }
+
     def test_user_create(self):
         """
         Test create user end point
         """
         form_data = {"username": "testuser@email.com", "password": "password"}
 
-        response = self.client.post('/api/account/create', data=form_data)
+        response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.get_json(), {"account": "testuser@email.com", "created": "success"})
 
@@ -34,7 +40,7 @@ class TestAccount(unittest.TestCase):
         session_scope_mock.side_effect = SQLAlchemyError()
         form_data = {"username": "testuser@email.com", "password": "password"}
 
-        response = self.client.post('/api/account/create', data=form_data)
+        response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.get_json(), {"detail": "Unable to commit account to database"})
 
@@ -46,10 +52,10 @@ class TestAccount(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
-        response = self.client.post('/api/account/create', data=form_data)
+        response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 409)
@@ -61,7 +67,7 @@ class TestAccount(unittest.TestCase):
         """
         form_data = {"password": "password"}  # missing username
 
-        response = self.client.post('/api/account/create', data=form_data)
+        response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
 
@@ -73,12 +79,12 @@ class TestAccount(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
 
         form_data = {"username": "testuser@email.com", "account_verified": "true"}
-        response = self.client.put('/api/account/create', data=form_data)
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 201)
@@ -95,7 +101,7 @@ class TestAccount(unittest.TestCase):
         # When
 
         data = {"username": "idonotexist@example.com", "account_verified": "true"}
-        response = self.client.put('/api/account/create', data=data)
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 401)
@@ -111,12 +117,12 @@ class TestAccount(unittest.TestCase):
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post('/api/account/create', data=form_data)
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # When
 
         form_data = {"username": "testuser@email.com", "account_verified": "garbage"}
-        response = self.client.put('/api/account/create', data=form_data)
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 400)
@@ -128,7 +134,7 @@ class TestAccount(unittest.TestCase):
         """
         session_scope_mock.side_effect = SQLAlchemyError()
         form_data = {"username": "testuser@email.com", "account_verified": "true"}
-        response = self.client.put('/api/account/create', data=form_data)
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.get_json(), {"detail": "Unable to commit updated account to database"})

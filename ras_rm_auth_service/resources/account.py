@@ -6,12 +6,19 @@ from flask import Blueprint, make_response, request, jsonify
 from passlib.hash import bcrypt
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
+from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 account = Blueprint('account_view', __name__, url_prefix='/api/account')
+
+
+@account.before_request
+@auth.login_required
+def before_account_view():
+    pass
 
 
 @account.route('/create', methods=['POST'])
