@@ -23,14 +23,22 @@ def before_tokens_view():
 def post_token():
     post_params = request.form
 
+    try:
+        username = post_params['username']
+        password = post_params['password']
+    except KeyError as e:
+        logger.debug("Missing request parameter", exception=e)
+        return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
+
     with non_transactional_session() as session:
-        user = session.query(User).filter(User.username == post_params.get('username', "")).first()
+        user = session.query(User).filter(User.username == username).first()
 
     if not user:
+        logger.debug("User does not exist")
         return make_response(
             jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}), 401)
 
-    if not bcrypt.verify(post_params.get('password', ""), user.hash):
+    if not bcrypt.verify(password, user.hash):
         return make_response(jsonify({"detail": "Unauthorized user credentials"}), 401)
 
     if not user.is_verified:

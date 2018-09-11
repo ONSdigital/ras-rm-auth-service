@@ -43,7 +43,6 @@
 
 An `HTTP 201 OK` status code is returned if the request could be successfully processed.
 An `HTTP 400 BAD REQUEST` status code is returned for bad request parameters.
-An `HTTP 409 CONFLICT` status code is returned for conflicting username.
 Errors if unable to create new account.
 
 

@@ -48,7 +48,7 @@ class TestAccount(unittest.TestCase):
         """
         Given a user account has been created
         When another account is being created with the same email
-        Then a conflict error is thrown
+        Then a server error is thrown
         """
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
@@ -58,7 +58,7 @@ class TestAccount(unittest.TestCase):
         response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
 
         # Then
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(response.get_json(), {"detail": "Unable to create account with requested username"})
 
     def test_user_create_bad_request(self):
@@ -138,3 +138,80 @@ class TestAccount(unittest.TestCase):
 
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.get_json(), {"detail": "Unable to commit updated account to database"})
+
+    def test_user_can_change_email(self):
+        """
+        Given a user account has been created
+        When I change account email
+        Then user email is updated
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+
+        form_data = {"username": "testuser@email.com", "new_username": "anotheremail@email.com"}
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 201)
+
+    def test_cannot_change_email_for_a_user_that_does_not_exist(self):
+        """
+        Given no accounts exist
+        When I change account email
+        Then I get an authetication error
+        """
+        # Given
+        # There are no accounts
+
+        # When
+
+        data = {"username": "idonotexist@example.com", "new_username": "anotheremail@email.com"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {
+            "detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"
+        })
+
+    def test_user_change_email_conflict(self):
+        """
+        Given a user account has been created
+        When another account is being updated with the same email
+        Then a server error is thrown
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        form_data = {"username": "anothertestuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+        data = {"username": "testuser@email.com", "new_username": "anothertestuser@email.com"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "Unable to commit updated account to database"})
+
+    def test_user_can_change_password(self):
+        """
+        Given a user account has been created
+        When I change account password
+        Then user password is updated
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+
+        form_data = {"username": "testuser@email.com", "password": "anotherpassword"}
+        response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 201)

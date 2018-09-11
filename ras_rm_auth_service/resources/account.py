@@ -1,9 +1,7 @@
 import logging
-from distutils.util import strtobool
 
 import structlog
 from flask import Blueprint, make_response, request, jsonify
-from passlib.hash import bcrypt
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from ras_rm_auth_service.basic_auth import auth
@@ -27,7 +25,7 @@ def post_account():
 
     try:
         user = User(username=post_params['username'])
-        user.hash = bcrypt.using(rounds=12).hash(post_params['password'])
+        user.update_user(post_params)
     except KeyError as e:
         logger.debug("Missing request parameter", exception=e)
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
@@ -36,7 +34,7 @@ def post_account():
         with transactional_session() as session:
             session.add(user)
     except IntegrityError as e:
-        return make_response(jsonify({"detail": "Unable to create account with requested username"}), 409)
+        return make_response(jsonify({"detail": "Unable to create account with requested username"}), 500)
     except SQLAlchemyError as e:
         return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
 
@@ -52,12 +50,14 @@ def put_account():
             user = session.query(User).filter(User.username == put_params.get('username', "")).first()
 
             if not user:
+                logger.debug("User does not exist")
                 return make_response(
                     jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
                     401)
 
-            user.is_verified = strtobool(put_params.get('account_verified'))
+            user.update_user(put_params)
     except ValueError as e:
+        logger.debug("Request param is an invalid type", exception=e)
         return make_response(jsonify({"detail": "account_verified status is invalid"}), 400)
     except SQLAlchemyError as e:
         return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)

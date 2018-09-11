@@ -1,6 +1,6 @@
 # ras-rm-auth-service
 
-A replacement for the RM auth service
+A replacement for the [django-oauth2-test](https://github.com/ONSdigital/django-oauth2-test)
 
 ## Developing
 
