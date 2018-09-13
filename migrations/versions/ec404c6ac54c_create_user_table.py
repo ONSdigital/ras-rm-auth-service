@@ -21,8 +21,10 @@ def upgrade():
         'user',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('username', sa.String(150), unique=True),
-        sa.Column('hash', sa.Text, nullable=False),
-        sa.Column('is_verified', sa.Boolean, default=False)
+        sa.Column('hashed_password', sa.Text, nullable=False),
+        sa.Column('account_verified', sa.Boolean, default=False, nullable=False),
+        sa.Column('account_locked', sa.Boolean, default=False, nullable=False),
+        sa.Column('failed_logins', sa.Boolean, default=0, nullable=False)
     )
 
 

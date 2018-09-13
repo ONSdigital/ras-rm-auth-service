@@ -84,6 +84,7 @@ class TestTokens(unittest.TestCase):
         form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"detail": "Unauthorized user credentials"})
 
     def test_user_does_not_exist(self):
         """
@@ -138,3 +139,36 @@ class TestTokens(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+
+    def test_account_locked_after_10_failed_attempts(self):
+        """
+        Given a verfied user exists
+        When I verify the account wrong 10 times
+        Then account should be locked
+        And should not be able to login with correct password
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        form_data = {"username": "testuser@email.com", "account_verified": "true"}
+        self.client.put('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+        form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
+        for _ in range(9):
+            response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
+            self.assertEqual(response.get_json(), {"detail": "Unauthorized user credentials"})
+
+        # tenth try
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"detail": "User account locked"})
+
+        # And Then
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"detail": "User account locked"})

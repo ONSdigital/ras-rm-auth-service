@@ -24,14 +24,16 @@ def post_account():
     post_params = request.form
 
     try:
-        user = User(username=post_params['username'])
-        user.update_user(post_params)
-    except KeyError as e:
-        logger.debug("Missing request parameter", exception=e)
+        username = post_params['username']
+        password = post_params['password']
+    except KeyError:
+        logger.debug("Missing request parameter")
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
     try:
         with transactional_session() as session:
+            user = User(username=username)
+            user.set_hashed_password(password)
             session.add(user)
     except IntegrityError as e:
         return make_response(jsonify({"detail": "Unable to create account with requested username"}), 500)
@@ -46,8 +48,14 @@ def put_account():
     put_params = request.form
 
     try:
+        username = put_params['username']
+    except KeyError:
+        logger.debug("Missing request parameter")
+        return make_response(jsonify({"detail": "Missing 'username'"}), 400)
+
+    try:
         with transactional_session() as session:
-            user = session.query(User).filter(User.username == put_params.get('username', "")).first()
+            user = session.query(User).filter(User.username == username).first()
 
             if not user:
                 logger.debug("User does not exist")
@@ -56,8 +64,8 @@ def put_account():
                     401)
 
             user.update_user(put_params)
-    except ValueError as e:
-        logger.debug("Request param is an invalid type", exception=e)
+    except ValueError:
+        logger.debug("Request param is an invalid type")
         return make_response(jsonify({"detail": "account_verified status is invalid"}), 400)
     except SQLAlchemyError as e:
         return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)

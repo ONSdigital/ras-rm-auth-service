@@ -15,14 +15,36 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(150), unique=True)
-    hash = Column(Text, nullable=False)
-    is_verified = Column(Boolean, default=False)
+    hashed_password = Column(Text, nullable=False)
+    account_verified = Column(Boolean, default=False, nullable=False)
+    account_locked = Column(Boolean, default=False, nullable=False)
+    failed_logins = Column(Integer, default=0, nullable=False)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
 
         if 'account_verified' in update_params:
-            self.is_verified = strtobool(update_params['account_verified'])
+            self.account_verified = strtobool(update_params['account_verified'])
 
         if 'password' in update_params:
-            self.hash = bcrypt.using(rounds=12).hash(update_params['password'])
+            self.set_hashed_password(update_params['password'])
+
+        if 'account_locked' in update_params and not strtobool(update_params['account_locked']):
+            self.unlock_account()
+
+    def failed_login(self):
+        self.failed_logins += 1
+
+        if self.failed_logins >= 10:
+            self.account_locked = True
+
+    def unlock_account(self):
+        self.failed_logins = 0
+        self.account_locked = False
+        self.account_verified = True
+
+    def set_hashed_password(self, string_password):
+        self.hashed_password = bcrypt.using(rounds=12).hash(string_password)
+
+    def is_correct_password(self, string_password):
+        return bcrypt.verify(string_password, self.hashed_password)
