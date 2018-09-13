@@ -42,8 +42,8 @@ class TestTokens(unittest.TestCase):
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.get_json(),
-                         {"id": 895725, "access_token": "fakefake-4bc1-4254-b43a-f44791ecec75", "expires_in": 3600,
-                          "token_type": "Bearer", "scope": "", "refresh_token": "fakefake-2151-4b11-b0d5-a9a68f2c53de"})
+                         {"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
+                          "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"})
 
     def test_unverifed_user_cannot_login(self):
         """

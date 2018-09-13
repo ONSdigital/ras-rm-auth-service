@@ -55,5 +55,5 @@ def post_token():
         return make_response(jsonify({"detail": "User account not verified"}), 401)
 
     return make_response(
-        jsonify({"id": 895725, "access_token": "fakefake-4bc1-4254-b43a-f44791ecec75", "expires_in": 3600,
-                 "token_type": "Bearer", "scope": "", "refresh_token": "fakefake-2151-4b11-b0d5-a9a68f2c53de"}), 201)
+        jsonify({"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
+                 "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"}), 201)
