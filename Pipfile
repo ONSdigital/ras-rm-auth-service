@@ -15,7 +15,6 @@ sqlalchemy = "*"
 retrying = "*"
 "psycopg2" = "*"
 "psycopg2-binary" = "*"
-gevent = "*"
 flask-httpauth = "*"
 
 [dev-packages]
