@@ -22,6 +22,9 @@ flask-httpauth = "*"
 testfixtures = "*"
 pytest = "*"
 "flake8" = "*"
+codecov = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.6"
