@@ -16,6 +16,8 @@ retrying = "*"
 "psycopg2" = "*"
 "psycopg2-binary" = "*"
 flask-httpauth = "*"
+requestsdefaulter = "*"
+flask-zipkin = "*"
 
 [dev-packages]
 testfixtures = "*"

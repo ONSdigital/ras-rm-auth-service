@@ -1,16 +1,17 @@
 import logging
 import os
 
-from structlog import wrap_logger
-
+import requestsdefaulter
 from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack
+from flask_zipkin import Zipkin
 from retrying import retry, RetryError
 from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import exists, select
+from structlog import wrap_logger
 
 from ras_rm_auth_service.logger_config import logger_initial_config
 
@@ -22,8 +23,13 @@ def create_app(config=None):
 
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
+    app.name = app.config['NAME']
 
     app.url_map.strict_slashes = False
+
+    # Zipkin
+    zipkin = Zipkin(app=app, sample_rate=app.config.get("ZIPKIN_SAMPLE_RATE"))
+    requestsdefaulter.default_headers(zipkin.create_http_headers_for_new_span)
 
     from ras_rm_auth_service.resources.info import info_view  # NOQA # pylint: disable=wrong-import-position
     from ras_rm_auth_service.resources.account import account  # NOQA # pylint: disable=wrong-import-position
