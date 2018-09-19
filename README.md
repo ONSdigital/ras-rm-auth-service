@@ -6,6 +6,18 @@
 
 A replacement for the [django-oauth2-test](https://github.com/ONSdigital/django-oauth2-test)
 
+## Setup
+Based on python 3.6
+
+Use [Pyenv](https://github.com/pyenv/pyenv) to manage installed Python versions
+
+Install dependencies to a new virtual environment using [Pipenv](https://docs.pipenv.org/)
+
+```bash
+pip install -U pipenv
+pipenv install
+```
+
 ## Developing
 
 Run the tests
