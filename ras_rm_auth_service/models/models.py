@@ -6,6 +6,11 @@ from passlib.hash import bcrypt
 from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
+ACCOUNT_NOT_VERIFIED = "User account not verified"
+UNAUTHORIZED_USER_CREDENTIALS = "Unauthorized user credentials"
+USER_ACCOUNT_LOCKED = "User account locked"
+MAX_FAILED_LOGINS = 10
+
 Base = declarative_base()
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -35,11 +40,14 @@ class User(Base):
     def failed_login(self):
         self.failed_logins += 1
 
-        if self.failed_logins >= 10:
+        if self.failed_logins >= MAX_FAILED_LOGINS:
             self.account_locked = True
 
-    def unlock_account(self):
+    def reset_failed_logins(self):
         self.failed_logins = 0
+
+    def unlock_account(self):
+        self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
 
@@ -48,3 +56,26 @@ class User(Base):
 
     def is_correct_password(self, string_password):
         return bcrypt.verify(string_password, self.hashed_password)
+
+    def authorise(self, password):
+        if not self.is_correct_password(password):
+            self.failed_login()
+
+            if self.account_locked:
+                logger.debug(USER_ACCOUNT_LOCKED)
+                return False, USER_ACCOUNT_LOCKED
+
+            logger.debug(UNAUTHORIZED_USER_CREDENTIALS)
+            return False, UNAUTHORIZED_USER_CREDENTIALS
+
+        if self.account_locked:
+            logger.debug(USER_ACCOUNT_LOCKED)
+            return False, USER_ACCOUNT_LOCKED
+
+        if not self.account_verified:
+            logger.debug(ACCOUNT_NOT_VERIFIED)
+            return False, ACCOUNT_NOT_VERIFIED
+
+        self.reset_failed_logins()
+
+        return True, None

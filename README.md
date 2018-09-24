@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/ONSdigital/ras-rm-auth-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/ras-rm-auth-service)
 
 
-A replacement for the [django-oauth2-test](https://github.com/ONSdigital/django-oauth2-test)
+A drop-in replacement for the [django-oauth2-test](https://github.com/ONSdigital/django-oauth2-test)
 
 ## Setup
 Based on python 3.6
