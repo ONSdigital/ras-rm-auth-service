@@ -24,6 +24,7 @@ def create_app(config=None):
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
     app.name = app.config['NAME']
+    logger_initial_config(service_name=app.config['NAME'], log_level=app.config['LOGGING_LEVEL'])
 
     app.url_map.strict_slashes = False
 
@@ -107,7 +108,6 @@ def initialise_db(app):
 
 if __name__ == '__main__':
     app = create_app()
-    logger_initial_config(service_name=app.config['NAME'], log_level=app.config['LOGGING_LEVEL'])
 
     logger.info(f"Starting listening on port {app.config['PORT']}")
     app.run(debug=app.config['DEBUG'], host='0.0.0.0', port=int(app.config['PORT']))
