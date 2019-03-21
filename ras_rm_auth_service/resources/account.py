@@ -35,9 +35,11 @@ def post_account():
             user = User(username=username)
             user.set_hashed_password(password)
             session.add(user)
-    except IntegrityError as e:
+    except IntegrityError:
+        logger.exception("Unable to create account with requested username")
         return make_response(jsonify({"detail": "Unable to create account with requested username"}), 500)
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
+        logger.exception("Unable to commit account to database")
         return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
 
     return make_response(jsonify({"account": user.username, "created": "success"}), 201)
@@ -67,7 +69,8 @@ def put_account():
     except ValueError:
         logger.debug("Request param is an invalid type")
         return make_response(jsonify({"detail": "account_verified status is invalid"}), 400)
-    except SQLAlchemyError as e:
+    except SQLAlchemyError:
+        logger.exception("Unable to commit updated account to database")
         return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)
 
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
