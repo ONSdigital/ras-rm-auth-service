@@ -1,6 +1,7 @@
 import logging
 
 import structlog
+from sqlalchemy import func
 from flask import Blueprint, make_response, request, jsonify
 
 from ras_rm_auth_service.basic_auth import auth
@@ -30,7 +31,7 @@ def post_token():
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
     with transactional_session() as session:
-        user = session.query(User).filter(User.username == username).first()
+        user = session.query(User).filter(func.lower(User.username) == func.lower(username)).first()
 
         if not user:
             logger.debug("User does not exist")
