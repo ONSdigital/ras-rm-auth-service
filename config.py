@@ -24,7 +24,7 @@ class Config(object):
     if cf.detected:
         DATABASE_URI = cf.db.credentials['uri']
     else:
-        DATABASE_URI = os.getenv('DATABASE_URI', "postgres://postgres:postgres@localhost:6432/postgres")
+        DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:6432/postgres")
 
     # Zipkin
     ZIPKIN_DISABLE = bool(strtobool(os.getenv("ZIPKIN_DISABLE", "False")))
@@ -44,4 +44,4 @@ class TestingConfig(Config):
     Testing = True
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
-    DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgres://postgres:postgres@localhost:6432/postgres")
+    DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
