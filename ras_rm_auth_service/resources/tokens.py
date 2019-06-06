@@ -45,8 +45,7 @@ def post_token():
         try:
             user.authorise(payload.get('password'))
         except Unauthorized as ex:
-            logger.bind(username=payload.get('username'))
-            logger.debug(ex.description)
+            logger.debug(ex.description, username=payload.get('username'))
             return make_response(jsonify({"detail": ex.description}), 401)
 
     return make_response(
