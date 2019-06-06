@@ -17,6 +17,8 @@ psycopg2-binary = "*"
 flask-httpauth = "*"
 requestsdefaulter = "*"
 flask-zipkin = "*"
+marshmallow = "==3.0.0rc6"
+gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 
 [dev-packages]
 testfixtures = "*"

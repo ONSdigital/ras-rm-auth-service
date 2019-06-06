@@ -2,15 +2,18 @@ import logging
 
 import structlog
 from flask import Blueprint, make_response, request, jsonify
+from marshmallow import ValidationError
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
-from ras_rm_auth_service.models.models import User
+from ras_rm_auth_service.models.models import User, AccountSchema
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 account = Blueprint('account_view', __name__, url_prefix='/api/account')
+
+account_schema = AccountSchema()
 
 
 @account.before_request
@@ -24,22 +27,21 @@ def post_account():
     post_params = request.form
 
     try:
-        username = post_params['username']
-        password = post_params['password']
-    except KeyError:
-        logger.debug("Missing request parameter")
+        payload = account_schema.load(post_params)
+    except ValidationError as ex:
+        logger.debug("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
     try:
         with transactional_session() as session:
-            user = User(username=username)
-            user.set_hashed_password(password)
+            user = User(username=payload.get('username'))
+            user.set_hashed_password(payload.get('password'))
             session.add(user)
-    except IntegrityError:
-        logger.exception("Unable to create account with requested username")
+    except IntegrityError as ex:
+        logger.exception("Unable to create account with requested username", exc_info=ex)
         return make_response(jsonify({"detail": "Unable to create account with requested username"}), 500)
-    except SQLAlchemyError:
-        logger.exception("Unable to commit account to database")
+    except SQLAlchemyError as ex:
+        logger.exception("Unable to commit account to database", exc_info=ex)
         return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
 
     return make_response(jsonify({"account": user.username, "created": "success"}), 201)

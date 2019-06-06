@@ -3,6 +3,7 @@ import unittest
 from passlib.hash import bcrypt
 
 from ras_rm_auth_service.models.models import User, MAX_FAILED_LOGINS
+from werkzeug.exceptions import Unauthorized
 
 
 class TestModel(unittest.TestCase):
@@ -103,10 +104,9 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=0)
 
-        authorised, error_message = user.authorise("password")
+        authorised = user.authorise("password")
 
         self.assertEqual(True, authorised)
-        self.assertEqual(None, error_message)
 
     def test_authorise_successfully_authorised_resets_failed_logins(self):
         user = User(account_locked=False,
@@ -114,10 +114,9 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=5)
 
-        authorised, error_message = user.authorise("password")
+        authorised = user.authorise("password")
 
         self.assertEqual(True, authorised)
-        self.assertEqual(None, error_message)
         self.assertEqual(0, user.failed_logins)
 
     def test_authorise_wrong_password(self):
@@ -126,10 +125,11 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=0)
 
-        authorised, error_message = user.authorise("wrongpassword")
+        with self.assertRaises(Unauthorized) as err:
+            authorised = user.authorise("wrongpassword")
+            self.assertEqual(False, authorised)
 
-        self.assertEqual(False, authorised)
-        self.assertEqual("Unauthorized user credentials", error_message)
+        self.assertEqual("Unauthorized user credentials", err.exception.description)
         self.assertEqual(1, user.failed_logins)
 
     def test_authorise_wrong_password_user_becomes_locked(self):
@@ -138,10 +138,11 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=MAX_FAILED_LOGINS - 1)
 
-        authorised, error_message = user.authorise("wrongpassword")
+        with self.assertRaises(Unauthorized) as err:
+            authorised = user.authorise("wrongpassword")
+            self.assertEqual(False, authorised)
 
-        self.assertEqual(False, authorised)
-        self.assertEqual("User account locked", error_message)
+        self.assertEqual("User account locked", err.exception.description)
         self.assertEqual(MAX_FAILED_LOGINS, user.failed_logins)
 
     def test_authorise_correct_password_but_user_is_locked(self):
@@ -150,10 +151,11 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=0)
 
-        authorised, error_message = user.authorise("password")
+        with self.assertRaises(Unauthorized) as err:
+            authorised = user.authorise("password")
+            self.assertEqual(False, authorised)
 
-        self.assertEqual(False, authorised)
-        self.assertEqual("User account locked", error_message)
+        self.assertEqual("User account locked", err.exception.description)
 
     def test_authorise_correct_password_but_user_is_not_verified(self):
         user = User(account_locked=False,
@@ -161,7 +163,8 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=0)
 
-        authorised, error_message = user.authorise("password")
+        with self.assertRaises(Unauthorized) as err:
+            authorised = user.authorise("password")
+            self.assertEqual(False, authorised)
 
-        self.assertEqual(False, authorised)
-        self.assertEqual("User account not verified", error_message)
+        self.assertEqual("User account not verified", err.exception.description)

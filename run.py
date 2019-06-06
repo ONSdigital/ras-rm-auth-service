@@ -63,8 +63,6 @@ def create_database(db_connection, db_schema, pool_size, max_overflow, pool_recy
     alembic_cfg = Config("alembic.ini")
     alembic_cfg.attributes['configure_logger'] = False
 
-    logger.info("Creating database")
-
     if db_connection.startswith('postgres'):
         # fix-up the postgres schema:
         for t in models.Base.metadata.sorted_tables:
@@ -91,7 +89,6 @@ def create_database(db_connection, db_schema, pool_size, max_overflow, pool_recy
         logger.info("Creating database tables.")
         models.Base.metadata.create_all(engine)
 
-    logger.info("Ok, database tables have been created.")
     return engine
 
 
@@ -106,8 +103,4 @@ def initialise_db(app):
                              app.config['DB_MAX_OVERFLOW'], app.config['DB_POOL_RECYCLE'])
 
 
-if __name__ == '__main__':
-    app = create_app()
-
-    logger.info(f"Starting listening on port {app.config['PORT']}")
-    app.run(debug=app.config['DEBUG'], host='0.0.0.0', port=int(app.config['PORT']))
+app = create_app()
