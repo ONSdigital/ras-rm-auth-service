@@ -1,7 +1,7 @@
 import logging
 
 import structlog
-from marshmallow import ValidationError
+from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy import func
 from flask import Blueprint, make_response, request, jsonify
 
@@ -14,7 +14,7 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 tokens = Blueprint('tokens_view', __name__, url_prefix='/api/v1/tokens')
 
-account_schema = AccountSchema()
+account_schema = AccountSchema(unknown=EXCLUDE)
 
 
 @tokens.before_request

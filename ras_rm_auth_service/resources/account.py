@@ -2,7 +2,7 @@ import logging
 
 import structlog
 from flask import Blueprint, make_response, request, jsonify
-from marshmallow import ValidationError
+from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from ras_rm_auth_service.basic_auth import auth
@@ -13,7 +13,7 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 account = Blueprint('account_view', __name__, url_prefix='/api/account')
 
-account_schema = AccountSchema()
+account_schema = AccountSchema(unknown=EXCLUDE)
 
 
 @account.before_request
