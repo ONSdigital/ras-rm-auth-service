@@ -13,7 +13,7 @@ test: lint
 	pipenv run pytest
 
 run:
-	pipenv run python run.py
+	FLASK_APP=run.py pipenv run flask run
 
 docker:
 	docker build . -t sdcplatform/ras-rm-auth-service:latest
