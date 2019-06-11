@@ -13,7 +13,7 @@ test: lint
 	pipenv run pytest
 
 run:
-	FLASK_APP=run.py pipenv run flask run --port=8041
+	APP_SETTINGS=DevelopmentConfig FLASK_APP=run.py pipenv run flask run --port=8041
 
 docker:
 	docker build . -t sdcplatform/ras-rm-auth-service:latest
