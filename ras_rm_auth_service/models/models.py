@@ -1,10 +1,12 @@
 import logging
 from distutils.util import strtobool
 
+from marshmallow import Schema, fields, validate
 from structlog import wrap_logger
 from passlib.hash import bcrypt
 from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
+from werkzeug.exceptions import Unauthorized
 
 ACCOUNT_NOT_VERIFIED = "User account not verified"
 UNAUTHORIZED_USER_CREDENTIALS = "Unauthorized user credentials"
@@ -64,20 +66,23 @@ class User(Base):
             self.failed_login()
 
             if self.account_locked:
-                logger.debug(USER_ACCOUNT_LOCKED)
-                return False, USER_ACCOUNT_LOCKED
+                raise Unauthorized(description=USER_ACCOUNT_LOCKED)
 
-            logger.debug(UNAUTHORIZED_USER_CREDENTIALS)
-            return False, UNAUTHORIZED_USER_CREDENTIALS
+            raise Unauthorized(description=UNAUTHORIZED_USER_CREDENTIALS)
 
         if self.account_locked:
-            logger.debug(USER_ACCOUNT_LOCKED)
-            return False, USER_ACCOUNT_LOCKED
+            raise Unauthorized(description=USER_ACCOUNT_LOCKED)
 
         if not self.account_verified:
-            logger.debug(ACCOUNT_NOT_VERIFIED)
-            return False, ACCOUNT_NOT_VERIFIED
+            raise Unauthorized(description=ACCOUNT_NOT_VERIFIED)
 
         self.reset_failed_logins()
 
-        return True, None
+        return True
+
+
+class AccountSchema(Schema):
+    """ Account data which is required for the operation of runner itself
+    """
+    username = fields.String(required=True, validate=validate.Length(min=1))
+    password = fields.String(required=True, validate=validate.Length(min=1))

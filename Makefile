@@ -13,7 +13,7 @@ test: lint
 	pipenv run pytest
 
 run:
-	pipenv run python run.py
+	APP_SETTINGS=DevelopmentConfig pipenv run ./docker-entrypoint.sh
 
 docker:
 	docker build . -t sdcplatform/ras-rm-auth-service:latest

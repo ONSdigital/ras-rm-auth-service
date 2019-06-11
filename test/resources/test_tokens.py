@@ -201,3 +201,39 @@ class TestTokens(unittest.TestCase):
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(), {"detail": "User account locked"})
+
+    def test_post_tokens_empty_password_bad_request(self):
+        """
+        Given a user exists
+        When I verify the account without password
+        Then i should be presented with bad request
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+        form_data = {"username": "testuser@email.com", "password": ""}
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+
+    def test_post_tokens_empty_username_bad_request(self):
+        """
+        Given a user exists
+        When I verify the account without username
+        Then i should be presented with bad request
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+
+        # When
+        form_data = {"username": "", "password": "password"}
+        response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
