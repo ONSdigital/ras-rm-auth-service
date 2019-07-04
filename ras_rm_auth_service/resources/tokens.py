@@ -48,6 +48,4 @@ def post_token():
             logger.debug(ex.description, username=payload.get('username'))
             return make_response(jsonify({"detail": ex.description}), 401)
 
-    return make_response(
-        jsonify({"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                 "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"}), 201)
+    return make_response('', 204)

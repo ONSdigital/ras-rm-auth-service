@@ -40,10 +40,7 @@ class TestTokens(unittest.TestCase):
 
         form_data = {"username": "testuser@email.com", "password": "password"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.get_json(),
-                         {"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                          "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"})
+        self.assertEqual(response.status_code, 204)
 
     def test_verifed_user_can_login_with_case_insensitive_email(self):
         """
@@ -69,10 +66,7 @@ class TestTokens(unittest.TestCase):
         form_data = {"username": "TeStUsER@eMAil.com", "password": "password"}
         response = self.client.post(
             '/api/v1/tokens/', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.get_json(),
-                         {"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                          "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"})
+        self.assertEqual(response.status_code, 204)
 
     def test_unverifed_user_cannot_login(self):
         """
