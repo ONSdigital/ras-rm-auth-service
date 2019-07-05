@@ -31,8 +31,8 @@ def post_token():
     with the same name, but instead of it returning a json payload with tokens, we decided a 204 would suffice as
     the HTTP equivalent of a thumbs up that the credentials were correct.
 
-    Once the old service has been retired, this endpoint and this services API as a whole needs to be reviewed and cleaned
-    up.
+    Once the old service has been retired, this endpoint and this services API as a whole needs to be reviewed
+    and cleaned up.
     """
     logger.info("Verifying user credentials")
     post_params = request.form
