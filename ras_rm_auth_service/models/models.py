@@ -35,6 +35,7 @@ class User(Base):
 
         if 'password' in update_params:
             self.set_hashed_password(update_params['password'])
+            
         if 'account_locked' in update_params and not strtobool(update_params['account_locked']):
             self.unlock_account()
 
