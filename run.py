@@ -46,7 +46,7 @@ def create_app(config=None):
         exit(1)
 
     logger.info('App and database successfully initialised', app_name=app.name, version=app.config['VERSION'])
-    
+
     return app
 
 
