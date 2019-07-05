@@ -29,7 +29,7 @@ def post_account():
     try:
         payload = account_schema.load(post_params)
     except ValidationError as ex:
-        logger.debug("Missing request parameter", exc_info=ex)
+        logger.info("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
     try:
@@ -44,7 +44,7 @@ def post_account():
         logger.exception("Unable to commit account to database", exc_info=ex)
         return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
 
-    logger.debug("Successfully created account", username=user.username)
+    logger.info("Successfully created account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "created": "success"}), 201)
 
 
@@ -54,8 +54,8 @@ def put_account():
 
     try:
         username = put_params['username']
-    except KeyError:
-        logger.debug("Missing request parameter")
+    except KeyError as ex:
+        logger.info("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"detail": "Missing 'username'"}), 400)
 
     try:
@@ -63,18 +63,18 @@ def put_account():
             user = session.query(User).filter(User.username == username).first()
 
             if not user:
-                logger.debug("User does not exist", username=username)
+                logger.info("User does not exist")
                 return make_response(
                     jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
                     401)
 
             user.update_user(put_params)
-    except ValueError:
-        logger.debug("Request param is an invalid type")
+    except ValueError as ex:
+        logger.info("Request param is an invalid type", exc_info=ex)
         return make_response(jsonify({"detail": "account_verified status is invalid"}), 400)
-    except SQLAlchemyError:
-        logger.exception("Unable to commit updated account to database")
+    except SQLAlchemyError as ex:
+        logger.exception("Unable to commit updated account to database", exc_info=ex)
         return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)
 
-    logger.debug("Successfully updated account", username=user.username)
+    logger.info("Successfully updated account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
