@@ -43,19 +43,20 @@ class User(Base):
         self.failed_logins += 1
 
         if self.failed_logins >= MAX_FAILED_LOGINS:
-            logger.info("Maximum failed logins reached, locking account")
+            logger.info("Maximum failed logins reached, locking account", user_id=id)
             self.account_locked = True
 
     def reset_failed_logins(self):
         self.failed_logins = 0
 
     def unlock_account(self):
-        logger.info("Unlocking account")
+        logger.info("Unlocking account", user_id=id)
         self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
 
     def set_hashed_password(self, string_password):
+        logger.info("Changing password for account", user_id=id)
         self.hashed_password = bcrypt.using(rounds=12).hash(string_password)
 
     def is_correct_password(self, string_password):

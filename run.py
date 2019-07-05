@@ -45,6 +45,8 @@ def create_app(config=None):
         logger.exception('Failed to initialise database')
         exit(1)
 
+    logger.info('App and database successfully initialised', app_name=app.name, version=app.config['VERSION'])
+
     return app
 
 
