@@ -77,6 +77,11 @@ An `HTTP 401 UNAUTHORIZED` status code is returned for unauthorized user credent
 
 
 ## verify account
+This endpoint came about from the old oauth2 auth service this service is replacing.  In that service, you hit the endpoint
+with the credentials and you got oauth tokens in the response.  To hasten the changeover, this endpoint was left as is, but instead
+of it returning tokens (that weren't being used by anything), we give a response with a status code of 204 to say that it was successful
+but we don't need to give anything back to you.
+
 * `POST /api/v1/tokens` verify user account
 
 **Required parameters:** 
@@ -91,17 +96,6 @@ An `HTTP 401 UNAUTHORIZED` status code is returned for unauthorized user credent
 }
 ```
 
-### Example JSON Response
-```json
-{
-  "id": 895725, 
-  "access_token": "fakefake-4bc1-4254-b43a-f44791ecec75", 
-  "expires_in": 3600,
-  "token_type": "Bearer", 
-  "scope": "", 
-  "refresh_token": "fakefake-2151-4b11-b0d5-a9a68f2c53de"
-}
-```
-
-An `HTTP 201 OK` status code is returned if the request could be successfully processed. 
+An `HTTP 204 NO CONTENT` status code is returned if the request could be successfully processed and the user credentials are correct
+An `HTTP 400 BAD REQUEST` status code is returned if the request is missing any parameters
 An `HTTP 401 UNAUTHORIZED` status code is returned for Unauthorized user credentials, unverified user and if user does not exist.

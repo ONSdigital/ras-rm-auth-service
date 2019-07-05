@@ -25,6 +25,16 @@ def before_tokens_view():
 
 @tokens.route('/', methods=['POST'])
 def post_token():
+    """This endpoint looks weird because it has a history with the previous authentication service.
+    The previous one had a /tokens endpoint to provide oauth tokens for users who provided correct credentials.
+    In the changeover from the old auth service to this one, to make the changeover less risky, we kept this endpoint
+    with the same name, but instead of it returning a json payload with tokens, we decided a 204 would suffice as
+    the HTTP equivalent of a thumbs up that the credentials were correct.
+
+    Once the old service has been retired, this endpoint and this services API as a whole needs to be reviewed and cleaned
+    up.
+    """
+    logger.info("Verifying user credentials")
     post_params = request.form
 
     try:
@@ -48,4 +58,5 @@ def post_token():
             logger.debug(ex.description, username=payload.get('username'))
             return make_response(jsonify({"detail": ex.description}), 401)
 
+    logger.info("User credentials correct")
     return make_response('', 204)
