@@ -44,6 +44,7 @@ def post_account():
         logger.exception("Unable to commit account to database", exc_info=ex)
         return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
 
+    logger.debug("Successfully created account", username=user.username)
     return make_response(jsonify({"account": user.username, "created": "success"}), 201)
 
 
@@ -62,7 +63,7 @@ def put_account():
             user = session.query(User).filter(User.username == username).first()
 
             if not user:
-                logger.debug("User does not exist")
+                logger.debug("User does not exist", username=username)
                 return make_response(
                     jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
                     401)
@@ -75,4 +76,5 @@ def put_account():
         logger.exception("Unable to commit updated account to database")
         return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)
 
+    logger.debug("Successfully updated account", username=user.username)
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)

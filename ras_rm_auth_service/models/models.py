@@ -35,7 +35,6 @@ class User(Base):
 
         if 'password' in update_params:
             self.set_hashed_password(update_params['password'])
-
         if 'account_locked' in update_params and not strtobool(update_params['account_locked']):
             self.unlock_account()
 
@@ -43,19 +42,20 @@ class User(Base):
         self.failed_logins += 1
 
         if self.failed_logins >= MAX_FAILED_LOGINS:
-            logger.info("Maximum failed logins reached, locking account")
+            logger.debug("Maximum failed logins reached, locking account", username=username)
             self.account_locked = True
 
     def reset_failed_logins(self):
         self.failed_logins = 0
 
     def unlock_account(self):
-        logger.info("Unlocking account")
+        logger.debug("Unlocking account", username=username)
         self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
 
     def set_hashed_password(self, string_password):
+        logger.debug("Changing password for account", username=username)
         self.hashed_password = bcrypt.using(rounds=12).hash(string_password)
 
     def is_correct_password(self, string_password):
