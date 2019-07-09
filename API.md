@@ -1,11 +1,14 @@
 # Auth service API
- This page documents the Auth service API endpoints. Apart from the Service Information endpoint, all these endpoints 
+
+ This page documents the Auth service API endpoints. Apart from the Service Information endpoint, all these endpoints
  are secured using HTTP basic authentication.
 
 ## Service Information
+
 * `GET /info` will return information about this service, collated from when it was last built.
- 
+
 ### Example JSON Response
+
 ```json
 {
   "name": "ras-rm-auth-service",
@@ -17,15 +20,16 @@
 }
 ```
 
-
 ## create account
+
 * `POST /api/account/create` create user account
 
-**Required parameters:** 
+**Required parameters:**
 `username` user's email address.
 `password` user's password
- 
+
 ### Example JSON Request
+
 ```json
 {
   "username": "example@example.com",
@@ -34,6 +38,7 @@
 ```
 
 ### Example JSON Response
+
 ```json
 {
   "account": "example@example.com",
@@ -45,17 +50,18 @@ An `HTTP 201 OK` status code is returned if the request could be successfully pr
 An `HTTP 400 BAD REQUEST` status code is returned for bad request parameters.
 Errors if unable to create new account.
 
-
 ## update account
+
 * `PUT /api/account/create` update user account.
 
-**Required parameters:** 
+**Required parameters:**
 `username` user's email address.
 
 **Optional parameters**
 `account_verified` update user's verified status.
- 
+
 ### Example JSON Request
+
 ```json
 {
   "username": "example@example.com",
@@ -64,6 +70,7 @@ Errors if unable to create new account.
 ```
 
 ### Example JSON Response
+
 ```json
 {
   "account": "example@example.com",
@@ -71,12 +78,12 @@ Errors if unable to create new account.
 }
 ```
 
-An `HTTP 201 OK` status code is returned if the request could be successfully processed. 
+An `HTTP 201 OK` status code is returned if the request could be successfully processed.
 An `HTTP 400 BAD REQUEST` status code is returned for bad request parameters.
 An `HTTP 401 UNAUTHORIZED` status code is returned for unauthorized user credentials.
 
-
 ## verify account
+
 This endpoint came about from the old oauth2 auth service this service is replacing.  In that service, you hit the endpoint
 with the credentials and you got oauth tokens in the response.  To hasten the changeover, this endpoint was left as is, but instead
 of it returning tokens (that weren't being used by anything), we give a response with a status code of 204 to say that it was successful
@@ -84,11 +91,12 @@ but we don't need to give anything back to you.
 
 * `POST /api/v1/tokens` verify user account
 
-**Required parameters:** 
+**Required parameters:**
 `username` user's email address.
 `password` user's password
- 
+
 ### Example JSON Request
+
 ```json
 {
   "username": "example@example.com",
