@@ -1,7 +1,9 @@
 import base64
 import unittest
 
+import pytest
 from ras_rm_auth_service.models import models
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 from run import create_app
 
 
@@ -40,10 +42,7 @@ class TestTokens(unittest.TestCase):
 
         form_data = {"username": "testuser@email.com", "password": "password"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.get_json(),
-                         {"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                          "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"})
+        self.assertEqual(response.status_code, 204)
 
     def test_verifed_user_can_login_with_case_insensitive_email(self):
         """
@@ -69,10 +68,7 @@ class TestTokens(unittest.TestCase):
         form_data = {"username": "TeStUsER@eMAil.com", "password": "password"}
         response = self.client.post(
             '/api/v1/tokens/', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.get_json(),
-                         {"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                          "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"})
+        self.assertEqual(response.status_code, 204)
 
     def test_unverifed_user_cannot_login(self):
         """
@@ -237,3 +233,18 @@ class TestTokens(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+
+    @pytest.mark.parametrize('email, obfuscated_email', [
+        ('example@example.com', 'e*****e@e*********m'),
+        ('prefix@domain.co.uk', 'p****x@d*********k'),
+        ('first.name@place.gov.uk', 'f********e@p********k'),
+        ('me+addition@gmail.com', 'm*********n@g*******m'),
+        ('a.b.c.someone@example.com', 'a***********e@e*********m'),
+        ('john.smith123456@londinium.ac.co.uk', 'j**************6@l****************k'),
+        ('me!?@example.com', 'm**?@e*********m'),
+        ('m@m.com', 'm@m***m'),
+    ])
+    @staticmethod
+    def test_obfuscate_email(email, obfuscated_email):
+        """Test obfuscate email correctly changes inputted emails"""
+        assert obfuscate_email(email) == obfuscated_email

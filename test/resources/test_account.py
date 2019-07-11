@@ -237,4 +237,4 @@ class TestAccount(unittest.TestCase):
         # Then
         form_data = {"username": "testuser@email.com", "password": "password"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 204)

@@ -25,6 +25,15 @@ def before_tokens_view():
 
 @tokens.route('/', methods=['POST'])
 def post_token():
+    """This endpoint looks weird because it has a history with the previous authentication service.
+    The previous one had a /tokens endpoint to provide oauth tokens for users who provided correct credentials.
+    In the changeover from the old auth service to this one, to make the changeover less risky, we kept this endpoint
+    with the same name, but instead of it returning a json payload with tokens, we decided a 204 would suffice as
+    the HTTP equivalent of a thumbs up that the credentials were correct.
+
+    Once the old service has been retired, this endpoint and this services API as a whole needs to be reviewed
+    and cleaned up.
+    """
     post_params = request.form
 
     try:
@@ -33,20 +42,34 @@ def post_token():
         logger.info("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
+    bound_logger = logger.bind(obfuscated_username=obfuscate_email(payload.get('username')))
+
     with transactional_session() as session:
+        bound_logger.info("Searching for user")
         user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get('username'))).first()
 
         if not user:
-            logger.info("User does not exist")
+            bound_logger.info("User does not exist")
             return make_response(
                 jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
                 401)
 
+        bound_logger.info("User found")
         try:
             user.authorise(payload.get('password'))
         except Unauthorized as ex:
+            bound_logger.info("User is unauthorised", description=ex.description)
             return make_response(jsonify({"detail": ex.description}), 401)
 
-    return make_response(
-        jsonify({"id": 895725, "access_token": "NotImplementedInAuthService", "expires_in": 3600,
-                 "token_type": "Bearer", "scope": "", "refresh_token": "NotImplementedInAuthService"}), 201)
+    logger.info("User credentials correct")
+    return make_response('', 204)
+
+
+def obfuscate_email(email):
+    """Takes an email address and returns an obfuscated version of it.
+    For example: test@example.com would turn into t**t@e*********m
+    """
+    m = email.split('@')
+    prefix = f'{m[0][0]}{"*"*(len(m[0])-2)}{m[0][-1]}'
+    domain = f'{m[1][0]}{"*"*(len(m[1])-2)}{m[1][-1]}'
+    return f'{prefix}@{domain}'

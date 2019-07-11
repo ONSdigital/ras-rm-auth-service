@@ -12,7 +12,7 @@ test: lint
 	pipenv check
 	pipenv run pytest
 
-run:
+start:
 	APP_SETTINGS=DevelopmentConfig pipenv run ./docker-entrypoint.sh
 
 docker:
