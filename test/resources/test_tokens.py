@@ -237,7 +237,12 @@ class TestTokens(unittest.TestCase):
     @pytest.mark.parametrize('email, obfuscated_email', [
         ('example@example.com', 'e*****e@e*********m'),
         ('prefix@domain.co.uk', 'p****x@d*********k'),
-        ('first.name@place.gov.uk', 'f********e@p********k')
+        ('first.name@place.gov.uk', 'f********e@p********k'),
+        ('me+addition@gmail.com', 'm*********n@g*******m'),
+        ('a.b.c.someone@example.com', 'a***********e@e*********m'),
+        ('john.smith123456@londinium.ac.co.uk', 'j**************6@l****************k'),
+        ('me!?@example.com', 'm**?@e*********m'),
+        ('m@m.com', 'm@m***m'),
     ])
     @staticmethod
     def test_obfuscate_email(email, obfuscated_email):
