@@ -1,7 +1,9 @@
 import base64
 import unittest
 
+import pytest
 from ras_rm_auth_service.models import models
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 from run import create_app
 
 
@@ -231,3 +233,13 @@ class TestTokens(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+
+    @pytest.mark.parametrize('email, obfuscated_email', [
+        ('example@example.com', 'e*****e@e*********m'),
+        ('prefix@domain.co.uk', 'p****x@d*********k'),
+        ('first.name@place.gov.uk', 'f********e@p********k')
+    ])
+    @staticmethod
+    def test_obfuscate_email(email, obfuscated_email):
+        """Test obfuscate email correctly changes inputted emails"""
+        assert obfuscate_email(email) == obfuscated_email

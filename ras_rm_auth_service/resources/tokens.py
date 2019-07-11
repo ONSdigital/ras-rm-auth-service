@@ -34,7 +34,6 @@ def post_token():
     Once the old service has been retired, this endpoint and this services API as a whole needs to be reviewed
     and cleaned up.
     """
-    logger.info("Verifying user credentials")
     post_params = request.form
 
     try:
@@ -43,20 +42,34 @@ def post_token():
         logger.debug("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
 
+    bound_logger = logger.bind(obfuscated_username=obfuscate_email(payload.get('username')))
+
     with transactional_session() as session:
+        bound_logger.info("Searching for user")
         user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get('username'))).first()
 
         if not user:
-            logger.debug("User does not exist")
+            bound_logger.info("User does not exist")
             return make_response(
                 jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
                 401)
 
+        bound_logger.info("User found")
         try:
             user.authorise(payload.get('password'))
         except Unauthorized as ex:
-            logger.debug(ex.description, username=payload.get('username'))
+            bound_logger.info("User is unauthorised", description=ex.description)
             return make_response(jsonify({"detail": ex.description}), 401)
 
     logger.info("User credentials correct")
     return make_response('', 204)
+
+
+def obfuscate_email(email):
+    """Takes an email address and returns an obfuscated version of it.
+    For example: test@example.com would turn into t**t@e*********m
+    """
+    m = email.split('@')
+    prefix = f'{m[0][0]}{"*"*(len(m[0])-2)}{m[0][-1]}'
+    domain = f'{m[1][0]}{"*"*(len(m[1])-2)}{m[1][-1]}'
+    return f'{prefix}@{domain}'
