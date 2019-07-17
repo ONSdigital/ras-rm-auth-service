@@ -51,6 +51,7 @@ def post_account():
 @account.route('/create', methods=['PUT'])
 def put_account():
     put_params = request.form
+    logger.info("username", put_params['username'])
 
     try:
         username = put_params['username']
