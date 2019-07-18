@@ -20,7 +20,7 @@ class TestLoggerConfig(unittest.TestCase):
     @log_capture()
     def test_success(self, l):
         os.environ['JSON_INDENT_LOGGING'] = '1'
-        logger_initial_config(service_name='ras-rm-auth-service')
+        logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
         message = l.records[0].msg
@@ -36,7 +36,7 @@ class TestLoggerConfig(unittest.TestCase):
     @log_capture()
     def test_indent_type_error(self, l):
         os.environ['JSON_INDENT_LOGGING'] = 'abc'
-        logger_initial_config(service_name='ras-rm-auth-service')
+        logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
         message = l.records[0].msg
@@ -50,7 +50,7 @@ class TestLoggerConfig(unittest.TestCase):
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
     def test_indent_value_error(self, l):
-        logger_initial_config(service_name='ras-rm-auth-service')
+        logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
         message = l.records[0].msg
