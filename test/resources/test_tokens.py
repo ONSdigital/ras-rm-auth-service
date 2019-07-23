@@ -234,6 +234,26 @@ class TestTokens(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
 
+    def test_invalid_basic_auth_user_returns_401_with_detail(self):
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        auth = "notadmin:secret".encode('utf-8')
+        headers = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
+
+        response = self.client.post('/api/account/create', data=form_data, headers=headers)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"detail": "Incorrect basic auth"})
+
+    def test_invalid_basic_auth_password_returns_401_with_detail(self):
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        auth = "admin:notsecret".encode('utf-8')
+        headers = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
+
+        response = self.client.post('/api/account/create', data=form_data, headers=headers)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"detail": "Incorrect basic auth"})
+
     @pytest.mark.parametrize('email, obfuscated_email', [
         ('example@example.com', 'e*****e@e*********m'),
         ('prefix@domain.co.uk', 'p****x@d*********k'),
