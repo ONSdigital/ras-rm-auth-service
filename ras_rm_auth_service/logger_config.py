@@ -9,22 +9,18 @@ from structlog.stdlib import add_log_level, filter_by_level
 from structlog.processors import JSONRenderer, TimeStamper
 
 
-def logger_initial_config(service_name=None,    # noqa: C901  pylint: disable=too-complex
-                          log_level=None,
-                          logger_format=None,
-                          logger_date_format=None):
-    if not logger_date_format:
-        logger_date_format = os.getenv('LOGGING_DATE_FORMAT', "%Y-%m-%dT%H:%M%s")
+def logger_initial_config(log_level=None):
+    """Configures the logger"""
+    service_name = 'ras-rm-auth-service'
+    logger_date_format = os.getenv('LOGGING_DATE_FORMAT', "%Y-%m-%dT%H:%M%s")
+    logger_format = "%(message)s"
+
     if not log_level:
         log_level = os.getenv('SMS_LOG_LEVEL', 'INFO')
-    if not logger_format:
-        logger_format = "%(message)s"
 
     try:
         indent = int(os.getenv('JSON_INDENT_LOGGING'))
-    except TypeError:
-        indent = None
-    except ValueError:
+    except (TypeError, ValueError):
         indent = None
 
     def add_service(logger, method_name, event_dict):  # pylint: disable=unused-argument

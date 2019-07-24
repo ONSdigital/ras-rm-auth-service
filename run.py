@@ -23,8 +23,8 @@ def create_app(config=None):
 
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
-    app.name = app.config['NAME']
-    logger_initial_config(service_name=app.config['NAME'], log_level=app.config['LOGGING_LEVEL'])
+    app.name = 'ras-rm-auth-service'
+    logger_initial_config(log_level=app.config['LOGGING_LEVEL'])
 
     app.url_map.strict_slashes = False
 
