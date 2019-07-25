@@ -86,7 +86,8 @@ class TestTokens(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "User account not verified"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "User account not verified"})
 
     def test_wrong_password_is_rejected(self):
         """
@@ -109,7 +110,8 @@ class TestTokens(unittest.TestCase):
         form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "Unauthorized user credentials"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "Unauthorized user credentials"})
 
     def test_user_does_not_exist(self):
         """
@@ -127,7 +129,8 @@ class TestTokens(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(),
-                         {"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"})
+                         {"title": "Auth service tokens error",
+                          "detail": "Unauthorized user credentials. This user does not exist on the Auth server"})
 
     def test_post_tokens_missing_password_bad_request(self):
         """
@@ -145,7 +148,8 @@ class TestTokens(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "Missing 'username' or 'password'"})
 
     def test_post_tokens_missing_username_bad_request(self):
         """
@@ -163,7 +167,8 @@ class TestTokens(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "Missing 'username' or 'password'"})
 
     def test_account_locked_after_10_failed_attempts(self):
         """
@@ -183,20 +188,22 @@ class TestTokens(unittest.TestCase):
         form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
         for _ in range(9):
             response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
-            self.assertEqual(response.get_json(), {"detail": "Unauthorized user credentials"})
+            self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                                   "detail": "Unauthorized user credentials"})
 
         # tenth try
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
 
         # Then
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "User account locked"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "User account locked"})
 
         # And Then
         form_data = {"username": "testuser@email.com", "password": "password"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "User account locked"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error", "detail": "User account locked"})
 
     def test_post_tokens_empty_password_bad_request(self):
         """
@@ -214,7 +221,8 @@ class TestTokens(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "Missing 'username' or 'password'"})
 
     def test_post_tokens_empty_username_bad_request(self):
         """
@@ -232,27 +240,27 @@ class TestTokens(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+        self.assertEqual(response.get_json(), {"title": "Auth service tokens error",
+                                               "detail": "Missing 'username' or 'password'"})
 
     def test_invalid_basic_auth_user_returns_401_with_detail(self):
-        form_data = {"username": "testuser@email.com", "password": "password"}
-        auth = "notadmin:secret".encode('utf-8')
-        headers = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
-
-        response = self.client.post('/api/account/create', data=form_data, headers=headers)
-
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "Incorrect basic auth"})
+        auth_credentials = "notadmin:secret".encode('utf-8')
+        self._test_invalid_basic_auth_credentials(auth_credentials)
 
     def test_invalid_basic_auth_password_returns_401_with_detail(self):
+
+        auth_credentials = "admin:notsecret".encode('utf-8')
+        self._test_invalid_basic_auth_credentials(auth_credentials)
+
+    def _test_invalid_basic_auth_credentials(self, auth_credentials):
         form_data = {"username": "testuser@email.com", "password": "password"}
-        auth = "admin:notsecret".encode('utf-8')
-        headers = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
+        headers = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth_credentials)).decode("ascii")}
 
         response = self.client.post('/api/account/create', data=form_data, headers=headers)
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.get_json(), {"detail": "Incorrect basic auth"})
+        self.assertEqual(response.get_json(), {"title": "Basic auth error in Auth service",
+                                               "detail": "Name or password incorrect"})
 
     @pytest.mark.parametrize('email, obfuscated_email', [
         ('example@example.com', 'e*****e@e*********m'),

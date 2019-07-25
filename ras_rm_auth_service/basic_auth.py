@@ -19,4 +19,5 @@ def get_pw(username):
 
 @auth.error_handler
 def auth_error():
-    return jsonify({"detail": "Incorrect basic auth"})
+    return jsonify({"title": "Basic auth error in Auth service",
+                    "detail": "Name or password incorrect"})

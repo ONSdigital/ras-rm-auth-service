@@ -42,7 +42,8 @@ class TestAccount(unittest.TestCase):
 
         response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json(), {"detail": "Unable to commit account to database"})
+        self.assertEqual(response.get_json(), {"title": "Auth service account create db error",
+                                               "detail": "Unable to commit account to database"})
 
     def test_user_create_email_conflict(self):
         """
@@ -59,7 +60,8 @@ class TestAccount(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json(), {"detail": "Unable to create account with requested username"})
+        self.assertEqual(response.get_json(), {"title": "Auth service account create error",
+                                               "detail": "Unable to create account with requested username"})
 
     def test_user_create_bad_request(self):
         """
@@ -69,7 +71,8 @@ class TestAccount(unittest.TestCase):
 
         response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.get_json(), {"detail": "Missing 'username' or 'password'"})
+        self.assertEqual(response.get_json(), {"title": "Authentication error in Auth service",
+                                               "detail": "Missing 'username' or 'password'"})
 
     def test_user_can_be_verified(self):
         """
@@ -106,8 +109,8 @@ class TestAccount(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(), {
-            "detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"
-        })
+            "title": "Auth service account update user error",
+            "detail": "Unauthorized user credentials. This user does not exist on the Auth server"})
 
     def test_user_must_verify_with_true_or_false(self):
         """
@@ -137,7 +140,8 @@ class TestAccount(unittest.TestCase):
         response = self.client.put('/api/account/create', data=form_data, headers=self.headers)
 
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json(), {"detail": "Unable to commit updated account to database"})
+        self.assertEqual(response.get_json(), {"title": "Auth service account update user error",
+                                               "detail": "Unable to commit updated account to database"})
 
     def test_user_can_change_email(self):
         """
@@ -174,8 +178,8 @@ class TestAccount(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(), {
-            "detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"
-        })
+            "title": "Auth service account update user error",
+            "detail": "Unauthorized user credentials. This user does not exist on the Auth server"})
 
     def test_user_change_email_conflict(self):
         """
@@ -196,7 +200,8 @@ class TestAccount(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json(), {"detail": "Unable to commit updated account to database"})
+        self.assertEqual(response.get_json(), {"title": "Auth service account update user error",
+                                               "detail": "Unable to commit updated account to database"})
 
     def test_user_can_change_password(self):
         """

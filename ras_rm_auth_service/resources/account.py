@@ -30,7 +30,8 @@ def post_account():
         payload = account_schema.load(post_params)
     except ValidationError as ex:
         logger.info("Missing request parameter", exc_info=ex)
-        return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
+        return make_response(jsonify({"title": "Authentication error in Auth service",
+                                      "detail": "Missing 'username' or 'password'"}), 400)
 
     try:
         with transactional_session() as session:
@@ -39,10 +40,12 @@ def post_account():
             session.add(user)
     except IntegrityError:
         logger.exception("Unable to create account with requested username")
-        return make_response(jsonify({"detail": "Unable to create account with requested username"}), 500)
+        return make_response(jsonify({"title": "Auth service account create error",
+                                      "detail": "Unable to create account with requested username"}), 500)
     except SQLAlchemyError:
         logger.exception("Unable to commit account to database")
-        return make_response(jsonify({"detail": "Unable to commit account to database"}), 500)
+        return make_response(jsonify({"title": "Auth service account create db error",
+                                      "detail": "Unable to commit account to database"}), 500)
 
     logger.info("Successfully created account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "created": "success"}), 201)
@@ -56,7 +59,8 @@ def put_account():
         username = put_params['username']
     except KeyError as ex:
         logger.info("Missing request parameter", exc_info=ex)
-        return make_response(jsonify({"detail": "Missing 'username'"}), 400)
+        return make_response(jsonify({"title": "Auth service account update user error",
+                                      "detail": "Missing 'username'"}), 400)
 
     try:
         with transactional_session() as session:
@@ -65,16 +69,19 @@ def put_account():
             if not user:
                 logger.info("User does not exist")
                 return make_response(
-                    jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
+                    jsonify({"title": "Auth service account update user error",
+                             "detail": "Unauthorized user credentials. This user does not exist on the Auth server"}),
                     401)
 
             user.update_user(put_params)
     except ValueError as ex:
         logger.info("Request param is an invalid type", exc_info=ex)
-        return make_response(jsonify({"detail": "account_verified status is invalid"}), 400)
+        return make_response(jsonify({"title": "Auth service account update user error",
+                                      "detail": "account_verified status is invalid"}), 400)
     except SQLAlchemyError:
         logger.exception("Unable to commit updated account to database")
-        return make_response(jsonify({"detail": "Unable to commit updated account to database"}), 500)
+        return make_response(jsonify({"title": "Auth service account update user error",
+                                      "detail": "Unable to commit updated account to database"}), 500)
 
     logger.info("Successfully updated account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
