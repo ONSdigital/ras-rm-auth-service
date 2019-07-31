@@ -40,7 +40,8 @@ def post_token():
         payload = account_schema.load(post_params)
     except ValidationError as ex:
         logger.info("Missing request parameter", exc_info=ex)
-        return make_response(jsonify({"detail": "Missing 'username' or 'password'"}), 400)
+        return make_response(jsonify({"title": "Auth service tokens error",
+                                      "detail": "Missing 'username' or 'password'"}), 400)
 
     bound_logger = logger.bind(obfuscated_username=obfuscate_email(payload.get('username')))
 
@@ -51,7 +52,8 @@ def post_token():
         if not user:
             bound_logger.info("User does not exist")
             return make_response(
-                jsonify({"detail": "Unauthorized user credentials. This user does not exist on the OAuth2 server"}),
+                jsonify({"title": "Auth service tokens error",
+                         "detail": "Unauthorized user credentials. This user does not exist on the Auth server"}),
                 401)
 
         bound_logger.info("User found")
@@ -59,7 +61,8 @@ def post_token():
             user.authorise(payload.get('password'))
         except Unauthorized as ex:
             bound_logger.info("User is unauthorised", description=ex.description)
-            return make_response(jsonify({"detail": ex.description}), 401)
+            return make_response(jsonify({"title": "Auth service tokens error",
+                                          "detail": ex.description}), 401)
 
     logger.info("User credentials correct")
     return make_response('', 204)

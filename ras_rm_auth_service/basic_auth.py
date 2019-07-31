@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, jsonify
 from flask_httpauth import HTTPBasicAuth
 
 auth = HTTPBasicAuth()
@@ -15,3 +15,9 @@ def get_pw(username):
     config_password = current_app.config['SECURITY_USER_PASSWORD']
     if username == config_username:
         return config_password
+
+
+@auth.error_handler
+def auth_error():
+    return jsonify({"title": "Basic auth error in Auth service",
+                    "detail": "Name or password incorrect"})
