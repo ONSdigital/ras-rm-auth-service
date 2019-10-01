@@ -85,3 +85,47 @@ def put_account():
 
     logger.info("Successfully updated account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
+
+
+@account.route('/user', methods=['DELETE'])
+def delete_account():
+
+    del_params = request.form
+
+    try:
+        username = del_params['username']
+
+    except KeyError as ex:
+        logger.info("Missing request parameter", exc_info=ex)
+        return make_response(jsonify({"title": "Auth service delete user error",
+                                      "detail": "Missing 'username'"}), 400)
+
+    logger.info("Start deleting the  user with email-id :", email_id=username)
+
+    try:
+        with transactional_session() as session:
+            user = session.query(User).filter(User.username == username).first()
+
+            if not user:
+                logger.info("User does not exist")
+                return make_response(
+                    jsonify({"title": "Auth service delete  user error",
+                             "detail": "This user does not exist on the Auth server"}), 401)
+
+            session.query(User).filter(User.username == username).delete()
+
+    except ValueError as ex:
+        logger.info("Request param is an invalid type", exc_info=ex)
+        return make_response(jsonify({"title": "Auth service delete  user error",
+                                     "detail": "Request param is an invalid type"}), 400)
+    except IntegrityError:
+        logger.exception("Unable to delete user account with requested user")
+        return make_response(jsonify({"title": "Auth service  delete  user error",
+                                      "detail": "Unable to delete account with requested user"}), 500)
+    except SQLAlchemyError:
+        logger.exception("Unable to commit delete operation")
+        return make_response(jsonify({"title": "Auth service  delete user error",
+                                      "detail": "Unable to commit delete  operation"}), 500)
+
+    logger.info("Successfully delete user account", user_id=user.id)
+    return make_response(jsonify({"User": user.username, "deleted": "success"}), 201)
