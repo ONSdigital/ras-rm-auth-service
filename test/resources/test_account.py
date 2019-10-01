@@ -243,3 +243,65 @@ class TestAccount(unittest.TestCase):
         form_data = {"username": "testuser@email.com", "password": "password"}
         response = self.client.post('/api/v1/tokens/', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 204)
+
+    def test_delete_user(self):
+        """
+        Test delete user end point
+
+                Given a locked user exists
+                When I unlock account
+                Then account should be deleted and verified
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        form_data = {"username": "testuser@email.com"}
+
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 204)
+
+    @patch('ras_rm_auth_service.resources.account.transactional_session')
+    def test_delete_user_unable_to_commit(self, session_scope_mock):
+        """
+        Test delete user end point unable to commit account
+        """
+        session_scope_mock.side_effect = SQLAlchemyError()
+        form_data = {"username": "testuser@email.com"}
+
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
+                                               "detail": "Unable to commit delete operation"})
+
+    def test_delete_user_bad_request(self):
+        """
+        Test delete user end point with bad request
+        """
+        form_data = {}  # missing username
+
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
+                                               "detail": "Missing 'username'"})
+
+    def test_delete_user_that_does_not_exist(self):
+        """
+        Given no user account exist
+        When delete a non-existing the account
+        Then get an authentication error
+        """
+        # Given
+        # Verify the user doesn't exist by trying to change one that doesn't exist.
+        data = {"username": "idonotexist@example.com", "password": "password"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 401)
+
+        # When
+        form_data = {"username": "idonotexist@example.com"}
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
+                                               "detail": "This user does not exist on the Auth server"})
