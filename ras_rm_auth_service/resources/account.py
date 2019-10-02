@@ -100,7 +100,7 @@ def delete_account():
         return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Missing 'username'"}), 400)
 
-    logger.info("Start deleting the  user with email-id :", email_id=username)
+    logger.info("Start deleting the  User  :", email_id=username)
 
     try:
         with transactional_session() as session:
@@ -118,14 +118,10 @@ def delete_account():
         logger.info("Request param is an invalid type", exc_info=ex)
         return make_response(jsonify({"title": "Auth service delete  user error",
                                      "detail": "Request param is an invalid type"}), 400)
-    except IntegrityError:
-        logger.exception("Unable to delete user account with requested user")
-        return make_response(jsonify({"title": "Auth service  delete  user error",
-                                      "detail": "Unable to delete account with requested user"}), 500)
     except SQLAlchemyError:
         logger.exception("Unable to commit delete operation")
         return make_response(jsonify({"title": "Auth service  delete user error",
                                       "detail": "Unable to commit delete  operation"}), 500)
 
-    logger.info("Successfully delete user account", user_id=user.id)
+    logger.info("Successfully delete user account", email_id=user.username)
     return make_response(jsonify({"User": user.username, "deleted": "success"}), 201)
