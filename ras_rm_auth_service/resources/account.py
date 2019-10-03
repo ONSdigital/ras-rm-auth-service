@@ -1,6 +1,6 @@
 import logging
-
 import structlog
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -90,17 +90,17 @@ def put_account():
 @account.route('/user', methods=['DELETE'])
 def delete_account():
 
-    del_params = request.form
+    params = request.form
 
     try:
-        username = del_params['username']
+        username = params['username']
 
-    except KeyError as ex:
-        logger.info("Missing request parameter", exc_info=ex)
+    except KeyError:
+        logger.exception("Missing request parameter")
         return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Missing 'username'"}), 400)
 
-    logger.info("Start deleting the  User  :", email_id=username)
+    logger.info("Start deleting  User  :", email_id=obfuscate_email(username))
 
     try:
         with transactional_session() as session:
@@ -110,12 +110,12 @@ def delete_account():
                 logger.info("User does not exist")
                 return make_response(
                     jsonify({"title": "Auth service delete  user error",
-                             "detail": "This user does not exist on the Auth server"}), 401)
+                             "detail": "This user does not exist on the Auth server"}), 404)
 
             session.query(User).filter(User.username == username).delete()
 
-    except ValueError as ex:
-        logger.info("Request param is an invalid type", exc_info=ex)
+    except ValueError:
+        logger.exception("Request param is an invalid type")
         return make_response(jsonify({"title": "Auth service delete  user error",
                                      "detail": "Request param is an invalid type"}), 400)
     except SQLAlchemyError:
@@ -123,5 +123,5 @@ def delete_account():
         return make_response(jsonify({"title": "Auth service  delete user error",
                                       "detail": "Unable to commit delete  operation"}), 500)
 
-    logger.info("Successfully delete user account", email_id=user.username)
-    return make_response(jsonify({"User": user.username, "deleted": "success"}), 201)
+    logger.info("Successfully deleted user ", email_id=obfuscate_email(username))
+    return '', 204

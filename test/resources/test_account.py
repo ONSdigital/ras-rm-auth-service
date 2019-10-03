@@ -259,8 +259,7 @@ class TestAccount(unittest.TestCase):
         form_data = {"username": "testuser@email.com"}
 
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.get_json(), {"User": "testuser@email.com", "deleted": "success"})
+        self.assertEqual(response.status_code, 204)
 
     @patch('ras_rm_auth_service.resources.account.transactional_session')
     def test_delete_user_unable_to_commit(self, session_scope_mock):
@@ -300,6 +299,6 @@ class TestAccount(unittest.TestCase):
         response = self.client.delete('/api/account/user', data=data, headers=self.headers)
 
         # Then
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json(), {"title": "Auth service delete  user error",
                                                "detail": "This user does not exist on the Auth server"})
