@@ -104,7 +104,7 @@ def delete_account():
 
     try:
         with transactional_session() as session:
-            user = session.query(User).filter(User.username == username).first()
+            user = session.query(User).filter(User.username == username).one()
 
             if not user:
                 logger.info("User does not exist")
@@ -114,10 +114,6 @@ def delete_account():
 
             session.query(User).filter(User.username == username).delete()
 
-    except ValueError:
-        logger.exception("Request param is an invalid type")
-        return make_response(jsonify({"title": "Auth service delete  user error",
-                                     "detail": "Request param is an invalid type"}), 400)
     except SQLAlchemyError:
         logger.exception("Unable to commit delete operation")
         return make_response(jsonify({"title": "Auth service  delete user error",
