@@ -293,8 +293,15 @@ class TestAccount(unittest.TestCase):
         """
         # Given
         # There are no user account
+        data = {"username": "idonotexist@example.com", "password": "password"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 401)
+
         # When
-        # Then
         form_data = {"username": "idonotexist@example.com"}
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 500)
+
+        # Then
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.get_json(), {"title": "Auth service delete  user error",
+                                               "detail": "This user does not exist on the Auth server"})

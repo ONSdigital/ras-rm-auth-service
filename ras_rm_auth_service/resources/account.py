@@ -104,7 +104,7 @@ def delete_account():
 
     try:
         with transactional_session() as session:
-            user = session.query(User).filter(User.username == username).one()
+            user = session.query(User).filter(User.username == username).one_or_none()
 
             if not user:
                 logger.info("User does not exist")
