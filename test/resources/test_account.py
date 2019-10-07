@@ -303,4 +303,3 @@ class TestAccount(unittest.TestCase):
         form_data = {"username": "idonotexist@example.com"}
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 500)
-
