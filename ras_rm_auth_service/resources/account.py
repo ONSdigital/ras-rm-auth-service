@@ -114,5 +114,5 @@ def delete_account():
         return make_response(jsonify({"title": "Auth service  delete user error",
                                       "detail": "Unable to commit delete  operation"}), 500)
 
-    logger.info("Successfully deleted userw", username=obfuscate_email(username))
+    logger.info("Successfully deleted user", username=obfuscate_email(username))
     return '', 204
