@@ -9,7 +9,7 @@ cf = ONSCloudFoundry()
 class Config(object):
     DEBUG = False
     TESTING = False
-    VERSION = '0.2.0'
+    VERSION = '0.3.0'
     NAME = 'ras-rm-auth-service'
     DATABASE_SCHEMA = 'auth'
     PORT = os.getenv('PORT', 8041)
