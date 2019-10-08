@@ -292,7 +292,7 @@ class TestAccount(unittest.TestCase):
         Then get an authentication error
         """
         # Given
-        # There are no user account
+        # Verify the user doesn't exist by trying to change one that doesn't exist.
         data = {"username": "idonotexist@example.com", "password": "password"}
         response = self.client.put('/api/account/create', data=data, headers=self.headers)
         self.assertEqual(response.status_code, 401)
