@@ -111,7 +111,7 @@ def delete_account():
 
     except SQLAlchemyError:
         logger.exception("Unable to commit delete operation", username=obfuscate_email(username))
-        return make_response(jsonify({"title": "Auth service  delete user error",
+        return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Unable to commit delete operation"}), 500)
 
     logger.info("Successfully deleted user", username=obfuscate_email(username))

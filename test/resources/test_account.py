@@ -271,8 +271,8 @@ class TestAccount(unittest.TestCase):
 
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.get_json(), {"title": "Auth service  delete user error",
-                                               "detail": "Unable to commit delete  operation"})
+        self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
+                                               "detail": "Unable to commit delete operation"})
 
     def test_delete_user_bad_request(self):
         """
@@ -303,5 +303,5 @@ class TestAccount(unittest.TestCase):
 
         # Then
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.get_json(), {"title": "Auth service delete  user error",
+        self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
                                                "detail": "This user does not exist on the Auth server"})
