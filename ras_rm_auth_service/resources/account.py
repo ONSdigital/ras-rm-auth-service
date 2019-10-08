@@ -104,7 +104,7 @@ def delete_account():
         return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Missing 'username'"}), 400)
     except NoResultFound:
-        logger.info("User does not exist")
+        logger.info("User does not exist", username=obfuscate_email(username))
         return make_response(
             jsonify({"title": "Auth service delete  user error",
                      "detail": "This user does not exist on the Auth server"}), 404)
