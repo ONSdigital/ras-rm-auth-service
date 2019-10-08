@@ -1,13 +1,13 @@
 import logging
-import structlog
-from ras_rm_auth_service.resources.tokens import obfuscate_email
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-
+from sqlalchemy.orm.exc import NoResultFound
+import structlog
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User, AccountSchema
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -94,30 +94,25 @@ def delete_account():
 
     try:
         username = params['username']
+        logger.info("Deleting  User", username=obfuscate_email(username))
+        with transactional_session() as session:
+            session.query(User).filter(User.username == username).one()
+            session.query(User).filter(User.username == username).delete()
 
     except KeyError:
         logger.exception("Missing request parameter")
         return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Missing 'username'"}), 400)
-
-    logger.info("Start deleting  User  :", email_id=obfuscate_email(username))
-
-    try:
-        with transactional_session() as session:
-            user = session.query(User).filter(User.username == username).one_or_none()
-
-            if not user:
-                logger.info("User does not exist")
-                return make_response(
-                    jsonify({"title": "Auth service delete  user error",
-                             "detail": "This user does not exist on the Auth server"}), 404)
-
-            session.query(User).filter(User.username == username).delete()
+    except NoResultFound:
+        logger.info("User does not exist")
+        return make_response(
+            jsonify({"title": "Auth service delete  user error",
+                     "detail": "This user does not exist on the Auth server"}), 404)
 
     except SQLAlchemyError:
         logger.exception("Unable to commit delete operation")
         return make_response(jsonify({"title": "Auth service  delete user error",
                                       "detail": "Unable to commit delete  operation"}), 500)
 
-    logger.info("Successfully deleted user ", email_id=obfuscate_email(username))
+    logger.info("Successfully deleted userw", username=obfuscate_email(username))
     return '', 204
