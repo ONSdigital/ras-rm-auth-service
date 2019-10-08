@@ -94,7 +94,7 @@ def delete_account():
 
     try:
         username = params['username']
-        logger.info("Deleting  User", username=obfuscate_email(username))
+        logger.info("Deleting user", username=obfuscate_email(username))
         with transactional_session() as session:
             session.query(User).filter(User.username == username).one()
             session.query(User).filter(User.username == username).delete()
@@ -106,13 +106,13 @@ def delete_account():
     except NoResultFound:
         logger.info("User does not exist", username=obfuscate_email(username))
         return make_response(
-            jsonify({"title": "Auth service delete  user error",
+            jsonify({"title": "Auth service delete user error",
                      "detail": "This user does not exist on the Auth server"}), 404)
 
     except SQLAlchemyError:
         logger.exception("Unable to commit delete operation", username=obfuscate_email(username))
         return make_response(jsonify({"title": "Auth service  delete user error",
-                                      "detail": "Unable to commit delete  operation"}), 500)
+                                      "detail": "Unable to commit delete operation"}), 500)
 
     logger.info("Successfully deleted user", username=obfuscate_email(username))
     return '', 204
