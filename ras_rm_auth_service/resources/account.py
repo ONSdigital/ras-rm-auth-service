@@ -16,6 +16,7 @@ account = Blueprint('account_view', __name__, url_prefix='/api/account')
 account_schema = AccountSchema(unknown=EXCLUDE)
 
 
+# Sample comment added to test sign commit
 @account.before_request
 @auth.login_required
 def before_account_view():
