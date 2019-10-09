@@ -18,7 +18,7 @@ from ras_rm_auth_service.logger_config import logger_initial_config
 logger = wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None):
+def create_app(config: object = None) -> object:
     app = Flask(__name__)
 
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"

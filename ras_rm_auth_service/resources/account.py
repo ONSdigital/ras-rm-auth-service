@@ -30,6 +30,7 @@ def post_account():
     try:
         payload = account_schema.load(post_params)
     except ValidationError as ex:
+
         logger.info("Missing request parameter", exc_info=ex)
         return make_response(jsonify({"title": "Authentication error in Auth service",
                                       "detail": "Missing 'username' or 'password'"}), 400)
