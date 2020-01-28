@@ -6,8 +6,8 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxSurge:
-      maxUnavailable:
+      maxSurge: 1
+      maxUnavailable: 1
     type: RollingUpdate
   selector:
     matchLabels:
@@ -90,9 +90,4 @@ spec:
           - name: LOGGING_LEVEL
             value: "DEBUG"
           resources:
-            limits:
-              cpu: 1000m
-              memory: 1028Mi
-            requests:
-              cpu: 500m
-              memory: 512Mi
+            {{ toYaml .Values.resources | nindent 12 }}
