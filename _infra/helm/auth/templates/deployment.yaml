@@ -6,8 +6,8 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+      maxSurge: {{ .Values.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.rollingUpdate.maxUnavailable }}
     type: RollingUpdate
   selector:
     matchLabels:
@@ -21,15 +21,15 @@ spec:
     spec:
       containers:
         - name: ras-rm-auth-service
-          image: "eu.gcr.io/ons-rasrmbs-management/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
-          imagePullPolicy:
+          image: "{{ .Values.image.name }}/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http-server
-              containerPort: 8041
+              containerPort: {{ .Values.container.port }}
           readinessProbe:
             httpGet:
               path: /info
-              port: 8041
+              port: {{ .Values.container.port }}
             initialDelaySeconds: 1
             periodSeconds: 20
             failureThreshold: 5
@@ -38,7 +38,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /info
-              port: 8041
+              port: {{ .Values.container.port }}
             initialDelaySeconds: 1
             periodSeconds: 20
             failureThreshold: 5
@@ -78,7 +78,7 @@ spec:
                 name: oauth-secret
                 key: oauth-client-secret
           - name: PORT
-            value: "8041"
+            value: "{{ .Values.container.port }}"
           - name: APP_SETTINGS
             value: "DevelopmentConfig"
           - name: DATABASE_URI

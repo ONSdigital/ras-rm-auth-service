@@ -1,0 +1,21 @@
+replicaCount: 1
+
+env: "minikube"
+
+container:
+  port: 80
+
+image:
+  name: eu.gcr.io/ons-rasrmbs-management
+  pullPolicy: Always
+
+service:
+  port: 80
+
+resources:
+  requests:
+    memory: "256Mi"
+
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 1
