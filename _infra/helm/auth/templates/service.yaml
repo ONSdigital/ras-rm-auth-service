@@ -5,8 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8041
+  - port: {{ .Values.service.port }}
     protocol: TCP
-    targetPort: 8041
   selector:
     app: {{ .Chart.Name }}
