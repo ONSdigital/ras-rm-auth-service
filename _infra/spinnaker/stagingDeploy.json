@@ -1,16 +1,16 @@
 {
   "schema": "v2",
   "application": "auth",
-  "name": "auth",
+  "name": "deploy staging",
   "template": {
     "artifactAccount": "front50ArtifactCredentials",
-    "reference": "spinnaker://rasrmApplicationTemplate",
+    "reference": "spinnaker://individualDeploymentTemplate",
     "type": "front50/pipelineTemplate"
   },
   "variables": {
-    "name": "auth",
-    "defaultHelmChart": "auth-0.1.0.tgz",
-    "helmChartMatcher": "auth-.*\\.tgz"
+    "namespace": "staging",
+    "environment": "dev",
+    "service": "auth"
   },
   "exclude": [],
   "triggers": [],
