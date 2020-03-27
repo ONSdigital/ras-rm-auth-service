@@ -1,18 +1,17 @@
 {
   "schema": "v2",
   "application": "auth",
-  "name": "deploy dev",
+  "name": "deploy prod",
   "template": {
     "artifactAccount": "front50ArtifactCredentials",
     "reference": "spinnaker://individualDeploymentTemplate",
     "type": "front50/pipelineTemplate"
   },
   "variables": {
-    "namespace": "dev",
-    "configNamespace": "dev",
-    "environment": "dev",
-    "service": "auth",
-    "bucket": "ras-rm-configuration"
+    "namespace": "prod",
+    "environment": "prod",
+    "service": "action",
+    "bucket": "ras-rm-prod-configuration"
   },
   "exclude": [],
   "triggers": [],
