@@ -1,16 +1,14 @@
 {
   "schema": "v2",
   "application": "auth",
-  "name": "deploy staging",
+  "name": "deploy dev",
   "template": {
     "artifactAccount": "front50ArtifactCredentials",
-    "reference": "spinnaker://deployBaseline",
+    "reference": "spinnaker://deployBaselineTailored",
     "type": "front50/pipelineTemplate"
   },
   "variables": {
-    "namespace": "staging",
-    "environment": "dev",
-    "service": "auth"
+    "application": "auth"
   },
   "exclude": [],
   "triggers": [],
