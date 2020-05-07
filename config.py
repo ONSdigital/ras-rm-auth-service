@@ -26,11 +26,6 @@ class Config(object):
     else:
         DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:6432/postgres")
 
-    # Zipkin
-    ZIPKIN_DISABLE = bool(strtobool(os.getenv("ZIPKIN_DISABLE", "False")))
-    ZIPKIN_DSN = os.getenv("ZIPKIN_DSN", None)
-    ZIPKIN_SAMPLE_RATE = int(os.getenv("ZIPKIN_SAMPLE_RATE", 0))
-
 
 class DevelopmentConfig(Config):
     DEBUG = True
