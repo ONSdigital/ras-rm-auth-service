@@ -15,8 +15,8 @@ lint:
 	pipenv run flake8 --max-line-length=120 --max-complexity=10 .
 
 test: lint
-	pipenv check
-	#pipenv run pytest
+	#pipenv check
+	pipenv run pytest
 
 start:
 	APP_SETTINGS=DevelopmentConfig pipenv run ./docker-entrypoint.sh
