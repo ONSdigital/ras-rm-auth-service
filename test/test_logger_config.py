@@ -26,6 +26,7 @@ class TestLoggerConfig(unittest.TestCase):
         message = l.records[0].msg
 
         self.assertIn('"event": "Test",\n ', message)
+        self.assertIn('"severity": "error",\n ', message)
         self.assertIn('"level": "error",\n ', message)
         self.assertIn('"service": "ras-rm-auth-service",\n ', message)
         self.assertIn('"trace": "",\n ', message)

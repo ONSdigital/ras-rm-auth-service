@@ -30,6 +30,17 @@ def logger_initial_config(log_level=None):
         event_dict['service'] = service_name
         return event_dict
 
+    def add_severity_level(logger, method_name, event_dict):
+        """
+        Add the log level to the event dict.
+        """
+        if method_name == "warn":
+            # The stdlib has an alias
+            method_name = "warning"
+
+        event_dict["severity"] = method_name
+        return event_dict
+
     def zipkin_ids(logger, method_name, event_dict):  # pylint: disable=unused-argument
         event_dict['trace'] = ''
         event_dict['span'] = ''
