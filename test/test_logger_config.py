@@ -29,7 +29,6 @@ class TestLoggerConfig(unittest.TestCase):
         self.assertIn('"severity": "error",\n ', message)
         self.assertIn('"level": "error",\n ', message)
         self.assertIn('"service": "ras-rm-auth-service",\n ', message)
-        self.assertIn('"trace": "",\n ', message)
         self.assertIn('"span": "",\n ', message)
         self.assertIn('"parent": "",\n', message)
 
