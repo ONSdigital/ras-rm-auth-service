@@ -2,8 +2,6 @@ import logging
 import os
 import sys
 
-import flask
-from flask import g
 from structlog import configure
 from structlog.stdlib import add_log_level, filter_by_level
 from structlog.processors import JSONRenderer, TimeStamper
@@ -43,8 +41,12 @@ def logger_initial_config(log_level=None):
 
 
     logging.basicConfig(stream=sys.stdout, level=log_level, format=logger_format)
-    configure(processors=[add_severity_level, add_log_level, filter_by_level, add_service,
-                          TimeStamper(fmt=logger_date_format, utc=True, key="created_at"), JSONRenderer(indent=indent)])
+    configure(processors=[add_severity_level,
+                          add_log_level,
+                          filter_by_level,
+                          add_service,
+                          TimeStamper(fmt=logger_date_format, utc=True, key="created_at"),
+                          JSONRenderer(indent=indent)])
     oauth_log = logging.getLogger("requests_oauthlib")
     oauth_log.addHandler(logging.NullHandler())
     oauth_log.propagate = False
