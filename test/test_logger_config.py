@@ -26,11 +26,9 @@ class TestLoggerConfig(unittest.TestCase):
         message = l.records[0].msg
 
         self.assertIn('"event": "Test",\n ', message)
+        self.assertIn('"severity": "error",\n ', message)
         self.assertIn('"level": "error",\n ', message)
         self.assertIn('"service": "ras-rm-auth-service",\n ', message)
-        self.assertIn('"trace": "",\n ', message)
-        self.assertIn('"span": "",\n ', message)
-        self.assertIn('"parent": "",\n', message)
 
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
@@ -41,11 +39,9 @@ class TestLoggerConfig(unittest.TestCase):
         logger.error('Test')
         message = l.records[0].msg
         self.assertIn('"event": "Test", ', message)
+        self.assertIn('"severity": "error", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
-        self.assertIn('"trace": "", ', message)
-        self.assertIn('"span": "", ', message)
-        self.assertIn('"parent": "", ', message)
 
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
@@ -55,8 +51,6 @@ class TestLoggerConfig(unittest.TestCase):
         logger.error('Test')
         message = l.records[0].msg
         self.assertIn('"event": "Test", ', message)
+        self.assertIn('"severity": "error", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
-        self.assertIn('"trace": "", ', message)
-        self.assertIn('"span": "", ', message)
-        self.assertIn('"parent": "", ', message)
