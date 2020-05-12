@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 
 from ras_rm_auth_service.cloud.cloudfoundry import ONSCloudFoundry
 

@@ -1,7 +1,6 @@
 import logging
 import os
 
-import requestsdefaulter
 from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack

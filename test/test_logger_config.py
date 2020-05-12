@@ -18,45 +18,36 @@ class TestLoggerConfig(unittest.TestCase):
 
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
-    def test_success(self, l):
+    def test_success(self, list):
         os.environ['JSON_INDENT_LOGGING'] = '1'
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
-        message = l.records[0].msg
+        message = list.records[0].msg
 
         self.assertIn('"event": "Test",\n ', message)
         self.assertIn('"level": "error",\n ', message)
         self.assertIn('"service": "ras-rm-auth-service",\n ', message)
-        self.assertIn('"trace": "",\n ', message)
-        self.assertIn('"span": "",\n ', message)
-        self.assertIn('"parent": "",\n', message)
 
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
-    def test_indent_type_error(self, l):
+    def test_indent_type_error(self, list):
         os.environ['JSON_INDENT_LOGGING'] = 'abc'
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
-        message = l.records[0].msg
+        message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
-        self.assertIn('"trace": "", ', message)
-        self.assertIn('"span": "", ', message)
-        self.assertIn('"parent": "", ', message)
 
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
-    def test_indent_value_error(self, l):
+    def test_indent_value_error(self, list):
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
         logger.error('Test')
-        message = l.records[0].msg
+        message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
-        self.assertIn('"trace": "", ', message)
-        self.assertIn('"span": "", ', message)
-        self.assertIn('"parent": "", ', message)
