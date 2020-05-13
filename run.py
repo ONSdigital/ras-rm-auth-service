@@ -1,11 +1,9 @@
 import logging
 import os
 
-import requestsdefaulter
 from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack
-from flask_zipkin import Zipkin
 from retrying import retry, RetryError
 from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
@@ -27,10 +25,6 @@ def create_app(config=None):
     logger_initial_config(log_level=app.config['LOGGING_LEVEL'])
 
     app.url_map.strict_slashes = False
-
-    # Zipkin
-    zipkin = Zipkin(app=app, sample_rate=app.config.get("ZIPKIN_SAMPLE_RATE"))
-    requestsdefaulter.default_headers(zipkin.create_http_headers_for_new_span)
 
     from ras_rm_auth_service.resources.info import info_view  # NOQA # pylint: disable=wrong-import-position
     from ras_rm_auth_service.resources.account import account  # NOQA # pylint: disable=wrong-import-position
