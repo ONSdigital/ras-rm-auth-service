@@ -28,9 +28,30 @@ def logger_initial_config(log_level=None):
         event_dict['service'] = service_name
         return event_dict
 
+
     logging.basicConfig(stream=sys.stdout, level=log_level, format=logger_format)
     configure(processors=[add_log_level, filter_by_level, add_service,
                           TimeStamper(fmt=logger_date_format, utc=True, key="created_at"), JSONRenderer(indent=indent)])
+
+    def add_severity_level(logger, method_name, event_dict):  # pylint: disable=unused-argument
+        """
+        Add the log level to the event dict.
+        """
+        if method_name == "warn":
+            # The stdlib has an alias
+            method_name = "warning"
+
+        event_dict["severity"] = method_name
+        return event_dict
+
+    logging.basicConfig(stream=sys.stdout, level=log_level, format=logger_format)
+    configure(processors=[add_severity_level,
+                          add_log_level,
+                          filter_by_level,
+                          add_service,
+                          TimeStamper(fmt=logger_date_format, utc=True, key="created_at"),
+                          JSONRenderer(indent=indent)])
+
     oauth_log = logging.getLogger("requests_oauthlib")
     oauth_log.addHandler(logging.NullHandler())
     oauth_log.propagate = False

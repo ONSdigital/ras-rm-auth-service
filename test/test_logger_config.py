@@ -26,6 +26,7 @@ class TestLoggerConfig(unittest.TestCase):
         message = list.records[0].msg
 
         self.assertIn('"event": "Test",\n ', message)
+        self.assertIn('"severity": "error",\n ', message)
         self.assertIn('"level": "error",\n ', message)
         self.assertIn('"service": "ras-rm-auth-service",\n ', message)
 
@@ -38,6 +39,7 @@ class TestLoggerConfig(unittest.TestCase):
         logger.error('Test')
         message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
+        self.assertIn('"severity": "error", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
 
@@ -49,5 +51,6 @@ class TestLoggerConfig(unittest.TestCase):
         logger.error('Test')
         message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
+        self.assertIn('"severity": "error", ', message)
         self.assertIn('"level": "error", ', message)
         self.assertIn('"service": "ras-rm-auth-service", ', message)
