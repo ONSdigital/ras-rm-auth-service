@@ -1,9 +1,5 @@
 import os
 
-from ras_rm_auth_service.cloud.cloudfoundry import ONSCloudFoundry
-
-cf = ONSCloudFoundry()
-
 
 class Config(object):
     DEBUG = False
@@ -15,15 +11,7 @@ class Config(object):
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
-
-    DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', 5))
-    DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', 10))
-    DB_POOL_RECYCLE = -1
-
-    if cf.detected:
-        DATABASE_URI = cf.db.credentials['uri']
-    else:
-        DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:6432/postgres")
+    DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:6432/postgres")
 
 
 class DevelopmentConfig(Config):

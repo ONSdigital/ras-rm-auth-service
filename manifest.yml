@@ -1,8 +1,0 @@
----
-applications:
-- name: ras-rm-auth-service
-  health-check-type: http
-  health-check-http-endpoint: /info
-  memory: 512M
-  services:
-    - oauth-db
