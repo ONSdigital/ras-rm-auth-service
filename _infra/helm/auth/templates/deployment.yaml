@@ -117,13 +117,13 @@ spec:
           - name: SECURITY_USER_NAME
             valueFrom:
               secretKeyRef:
-                name: oauth-secret
-                key: oauth-client-id
+                name: security-credentials
+                key: security-user
           - name: SECURITY_USER_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: oauth-secret
-                key: oauth-client-secret
+                name: security-credentials
+                key: security-password
           - name: PORT
             value: "{{ .Values.container.port }}"
           - name: APP_SETTINGS

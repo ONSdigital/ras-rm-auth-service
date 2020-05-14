@@ -1,9 +1,0 @@
----
-applications:
-- name: authsvc-prod
-  instances: 15
-  health-check-type: http
-  health-check-http-endpoint: /info
-  memory: 512M
-  services:
-    - oauth-db

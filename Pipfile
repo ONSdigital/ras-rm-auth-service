@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 passlib = "*"
 bcrypt = "*"
-cfenv="*"
 gunicorn = "*"
 flask = "*"
 structlog = "*"
@@ -16,14 +15,13 @@ retrying = "*"
 psycopg2-binary = "*"
 flask-httpauth = "*"
 requestsdefaulter = "*"
-flask-zipkin = "*"
 marshmallow = "==3.0.0rc6"
 gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 
 [dev-packages]
 testfixtures = "*"
 pytest = "*"
-"flake8" = "*"
+flake8 = "*"
 codecov = "*"
 coverage = "*"
 pytest-cov = "*"
