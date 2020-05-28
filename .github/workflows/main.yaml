@@ -46,7 +46,7 @@ jobs:
           docker-compose up -d
           pip install pipenv
           pipenv install --dev
-      - name: Run Tox
+      - name: Run Tests
         run: |
           make lint
           pipenv run pytest --cov=ras_rm_auth_service --cov-report xml
