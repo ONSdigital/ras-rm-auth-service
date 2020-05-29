@@ -66,3 +66,4 @@ git_info
 **/._.DS_Store
 
 .pytest_cache
+.python-version

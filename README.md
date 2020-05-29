@@ -8,7 +8,7 @@ A drop-in replacement for the [django-oauth2-test](https://github.com/ONSdigital
 
 ## Setup
 
-Based on python 3.6
+Based on python 3.8
 
 Use [Pyenv](https://github.com/pyenv/pyenv) to manage installed Python versions
 
