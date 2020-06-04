@@ -27,7 +27,7 @@ class User(Base):
     account_verified = Column(Boolean, default=False, nullable=False)
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
-    last_login_date = Column(datetime, default=None)
+    last_login_date = Column(String, default=None)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
@@ -85,7 +85,7 @@ class User(Base):
         return True
 
     def update_last_login_date(self):
-        self.last_login_date = datetime.date.today()
+        self.last_login_date = datetime.date.today().strftime()
 
 
 class AccountSchema(Schema):
