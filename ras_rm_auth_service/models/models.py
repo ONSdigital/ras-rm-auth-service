@@ -85,9 +85,7 @@ class User(Base):
         return True
 
     def update_last_login_date(self):
-        current_time = datetime.now()
-        current_date = current_time.strftime("%m/%d/%Y")
-        self.last_login_date = current_date
+        self.last_login_date = datetime.date.today().strftime("%d/%m/%Y")
 
 
 class AccountSchema(Schema):
