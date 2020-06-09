@@ -168,3 +168,17 @@ class TestModel(unittest.TestCase):
             self.assertEqual(False, authorised)
 
         self.assertEqual("User account not verified", err.exception.description)
+
+    def test_last_login_date_field_exists_and_defaults_to_none(self):
+        user = User(username="test")
+        self.assertEqual(None, user.last_login_date)
+
+    def test_last_login_date_gets_filled_in_when_authorising(self):
+        user = User(account_locked=False,
+                    account_verified=True,
+                    hashed_password=bcrypt.hash("password"),
+                    failed_logins=0)
+
+        authorised = user.authorise("password")
+
+        self.assertEqual(True, user.last_login_date)
