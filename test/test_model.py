@@ -179,6 +179,6 @@ class TestModel(unittest.TestCase):
                     hashed_password=bcrypt.hash("password"),
                     failed_logins=0)
 
-        authorised = user.authorise("password")
+        user.authorise("password")
 
         self.assertEqual(True, user.last_login_date)
