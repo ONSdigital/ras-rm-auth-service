@@ -181,4 +181,4 @@ class TestModel(unittest.TestCase):
 
         user.authorise("password")
 
-        self.assertEqual(True, user.last_login_date)
+        self.assertIsNotNone(user.last_login_date)
