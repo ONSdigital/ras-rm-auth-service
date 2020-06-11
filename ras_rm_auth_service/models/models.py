@@ -27,7 +27,6 @@ class User(Base):
     account_verified = Column(Boolean, default=False, nullable=False)
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
-    last_login_date = Column(DateTime, default=None, nullable=True)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
@@ -80,12 +79,8 @@ class User(Base):
             raise Unauthorized(description=ACCOUNT_NOT_VERIFIED)
 
         self.reset_failed_logins()
-        self.update_last_login_date()
 
         return True
-
-    def update_last_login_date(self):
-        self.last_login_date = datetime.date.today()
 
 
 class AccountSchema(Schema):
