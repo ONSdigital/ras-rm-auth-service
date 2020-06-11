@@ -19,9 +19,9 @@ depends_on = None
 def upgrade():
     op.add_column(
         'user',
-        sa.Column('last_login_date', sa.String(100), default=None, nullable=True)
+        sa.Column('last_login_date', sa.DateTime, default=None, nullable=True)
     )
 
 
 def downgrade():
-    pass
+    op.drop_column('user', 'last_login_date')
