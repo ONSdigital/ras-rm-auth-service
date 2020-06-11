@@ -1,11 +1,10 @@
 import logging
-import datetime
 from distutils.util import strtobool
 
 from marshmallow import Schema, fields, validate
 from structlog import wrap_logger
 from passlib.hash import bcrypt
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.exceptions import Unauthorized
 
