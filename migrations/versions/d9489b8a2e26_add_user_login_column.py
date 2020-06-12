@@ -24,4 +24,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column('user', 'last_login_date')
+    op.drop_column('user', 'last_login_date', schema="auth")
