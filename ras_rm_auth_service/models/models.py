@@ -1,10 +1,11 @@
 import logging
+import datetime
 from distutils.util import strtobool
 
 from marshmallow import Schema, fields, validate
 from structlog import wrap_logger
 from passlib.hash import bcrypt
-from sqlalchemy import Column, Integer, String, Text, Boolean
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.exceptions import Unauthorized
 
@@ -26,6 +27,7 @@ class User(Base):
     account_verified = Column(Boolean, default=False, nullable=False)
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
+    last_login_date = Column(DateTime, default=None, nullable=True)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
@@ -78,8 +80,12 @@ class User(Base):
             raise Unauthorized(description=ACCOUNT_NOT_VERIFIED)
 
         self.reset_failed_logins()
+        self.update_last_login_date()
 
         return True
+
+    def update_last_login_date(self):
+        self.last_login_date = datetime.date.today()
 
 
 class AccountSchema(Schema):
