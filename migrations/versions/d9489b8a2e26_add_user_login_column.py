@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.add_column(
         'user',
-        sa.Column('last_login_date', sa.DateTime, default=None, nullable=True)
+        sa.Column('last_login_date', sa.DateTime, default=None, nullable=True), schema="auth"
     )
 
 
