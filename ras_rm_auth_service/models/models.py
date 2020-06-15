@@ -1,7 +1,6 @@
 import logging
-import datetime
 from distutils.util import strtobool
-
+from datetime import datetime
 from marshmallow import Schema, fields, validate
 from structlog import wrap_logger
 from passlib.hash import bcrypt
@@ -85,7 +84,7 @@ class User(Base):
         return True
 
     def update_last_login_date(self):
-        self.last_login_date = datetime.date.today()
+        self.last_login_date = datetime.now()
 
 
 class AccountSchema(Schema):
