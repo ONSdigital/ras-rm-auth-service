@@ -1,5 +1,5 @@
 import logging
-import datetime
+from datetime import datetime, timezone
 from distutils.util import strtobool
 
 from marshmallow import Schema, fields, validate
@@ -85,7 +85,7 @@ class User(Base):
         return True
 
     def update_last_login_date(self):
-        self.last_login_date = datetime.date.today()
+        self.last_login_date = datetime.now(timezone.utc)
 
 
 class AccountSchema(Schema):
