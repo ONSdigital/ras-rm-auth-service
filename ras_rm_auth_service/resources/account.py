@@ -1,6 +1,7 @@
 import logging
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import structlog
@@ -89,15 +90,13 @@ def put_account():
 
 @account.route('/user', methods=['DELETE'])
 def delete_account():
-
     params = request.form
-
     try:
         username = params['username']
         logger.info("Deleting user", username=obfuscate_email(username))
         with transactional_session() as session:
-            session.query(User).filter(User.username == username).one()
-            session.query(User).filter(User.username == username).delete()
+            session.query(User).filter(func.lower(User.username) == func.lower(username)).one()
+            session.query(User).filter(func.lower(User.username) == func.lower(username)).delete()
 
     except KeyError:
         logger.exception("Missing request parameter")
