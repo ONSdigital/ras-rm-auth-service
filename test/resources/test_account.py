@@ -165,7 +165,7 @@ class TestAccount(unittest.TestCase):
         """
         Given no accounts exist
         When I change account email
-        Then I get an authetication error
+        Then I get an authentication error
         """
         # Given
         # There are no accounts
@@ -257,6 +257,23 @@ class TestAccount(unittest.TestCase):
         self.client.post('/api/account/create', data=form_data, headers=self.headers)
         # When
         form_data = {"username": "testuser@email.com"}
+
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_user_case_insensitive(self):
+        """
+        Test delete user end point
+
+                Given a user exists
+                When I delete that user with a case different that it was initially entered with
+                Then account should be deleted
+        """
+        # Given
+        form_data = {"username": "tEstuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        form_data = {"username": "TeStUsEr@EmAiL.com"}
 
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 204)

@@ -95,8 +95,8 @@ def delete_account():
         username = params['username']
         logger.info("Deleting user", username=obfuscate_email(username))
         with transactional_session() as session:
-            session.query(User).filter(func.lower(User.username) == func.lower(username)).one()
-            session.query(User).filter(func.lower(User.username) == func.lower(username)).delete()
+            user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
+            session.delete(user)
 
     except KeyError:
         logger.exception("Missing request parameter")
