@@ -27,3 +27,9 @@ service:
 resources:
   requests:
     memory: "256Mi"
+
+crons:
+  markForDeletionScheduler:
+    name: user-data-marked-for-deletion-deleter
+    cron: "0/3 * * * *"
+    target: "delete-user-data"
