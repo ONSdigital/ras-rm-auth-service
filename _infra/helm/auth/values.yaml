@@ -31,5 +31,5 @@ resources:
 crons:
   markForDeletionScheduler:
     name: auth-scheduler-delete-users
-    cron: "0/3 * * * *"
+    cron: "0 3 * * *"
     target: "api/account/batch/users"
