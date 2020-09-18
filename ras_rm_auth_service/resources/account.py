@@ -115,3 +115,18 @@ def delete_account():
 
     logger.info("Successfully deleted user", username=obfuscate_email(username))
     return '', 204
+
+
+@account.route('/batch/user', methods=['DELETE'])
+def delete_accounts():
+    try:
+        logger.log("Scheduler deleting users marked for deletion")
+        with transactional_session() as session:
+            session.query(User).filter(User.mark_for_deletion is True).delete()
+
+    except SQLAlchemyError:
+        logger.exception("Unable to perform scheduler delete operation")
+        return make_response(jsonify({"title": "Scheduler operation for delete users error",
+                                      "detail": "Unable to perform delete operation"}), 500)
+    logger.info("Scheduler successfully deleted users marked for deletion")
+    return '', 204

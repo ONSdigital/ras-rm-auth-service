@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from ras_rm_auth_service.basic_auth import get_pw
 from ras_rm_auth_service.models import models
 from run import create_app
 
@@ -322,3 +323,16 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
                                                "detail": "This user does not exist on the Auth server"})
+
+    def test_(self):
+        """
+        Test create user end point
+        """
+        form_data = {"username": "testuser@email.com", "password": "password"}
+
+        response = self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.get_json(), {"account": "testuser@email.com", "created": "success"})
+        with self.app.app_context():
+            password = get_pw("testuser@email.com")
+            self.assertEqual(password, "password")

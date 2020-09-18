@@ -28,6 +28,7 @@ class User(Base):
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
     last_login_date = Column(DateTime, default=None, nullable=True)
+    mark_for_deletion = Column(Boolean, default=False)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
