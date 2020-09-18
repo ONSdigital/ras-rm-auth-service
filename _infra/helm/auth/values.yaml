@@ -30,6 +30,6 @@ resources:
 
 crons:
   markForDeletionScheduler:
-    name: user-data-marked-for-deletion-deleter
+    name: auth-scheduler-delete-users
     cron: "0/3 * * * *"
-    target: "delete-user-data"
+    target: "batch/users"
