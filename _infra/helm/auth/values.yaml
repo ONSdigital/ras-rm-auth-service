@@ -27,3 +27,9 @@ service:
 resources:
   requests:
     memory: "256Mi"
+
+crons:
+  markForDeletionScheduler:
+    name: auth-scheduler-delete-users
+    cron: "0 3 * * *"
+    target: "api/account/batch/users"

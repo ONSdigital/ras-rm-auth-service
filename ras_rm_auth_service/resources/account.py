@@ -90,14 +90,17 @@ def put_account():
 
 @account.route('/user', methods=['DELETE'])
 def delete_account():
+    """
+    Updates user data to be marked for deletion.
+    """
     params = request.form
     try:
         username = params['username']
         logger.info("Deleting user", username=obfuscate_email(username))
         with transactional_session() as session:
             user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
-            session.delete(user)
-
+            user.mark_for_deletion = True
+            session.commit()
     except KeyError:
         logger.exception("Missing request parameter")
         return make_response(jsonify({"title": "Auth service delete user error",
@@ -114,4 +117,22 @@ def delete_account():
                                       "detail": "Unable to commit delete operation"}), 500)
 
     logger.info("Successfully deleted user", username=obfuscate_email(username))
+    return '', 204
+
+
+@account.route('/batch/users', methods=['DELETE'])
+def delete_accounts():
+    """
+    Deletes all user marked for deletion. to be called from scheduler
+    """
+    try:
+        logger.info("Scheduler deleting users marked for deletion")
+        with transactional_session() as session:
+            session.query(User).filter(User.mark_for_deletion == True).delete() # noqa
+
+    except SQLAlchemyError:
+        logger.exception("Unable to perform scheduler delete operation")
+        return make_response(jsonify({"title": "Scheduler operation for delete users error",
+                                      "detail": "Unable to perform delete operation"}), 500)
+    logger.info("Scheduler successfully deleted users marked for deletion")
     return '', 204
