@@ -33,7 +33,7 @@ class TestAccount(unittest.TestCase):
         with self.app.app_context():
             with transactional_session() as session:
                 user = session.query(User.mark_for_deletion).filter(User.username == user_name).first()
-                return user.mark_for_deletion == True
+                return user.mark_for_deletion == True # noqa
 
     def test_user_create(self):
         """

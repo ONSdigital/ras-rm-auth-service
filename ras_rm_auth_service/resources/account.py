@@ -128,7 +128,7 @@ def delete_accounts():
     try:
         logger.info("Scheduler deleting users marked for deletion")
         with transactional_session() as session:
-            session.query(User).filter(User.mark_for_deletion == True).delete()
+            session.query(User).filter(User.mark_for_deletion == True).delete() # noqa
 
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler delete operation")
