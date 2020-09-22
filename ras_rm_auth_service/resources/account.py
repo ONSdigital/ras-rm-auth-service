@@ -1,4 +1,8 @@
+import base64
+import json
 import logging
+
+import requests
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy import func
@@ -9,6 +13,7 @@ from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User, AccountSchema
 from ras_rm_auth_service.resources.tokens import obfuscate_email
+from flask import current_app as app
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -128,11 +133,52 @@ def delete_accounts():
     try:
         logger.info("Scheduler deleting users marked for deletion")
         with transactional_session() as session:
-            session.query(User).filter(User.mark_for_deletion == True).delete() # noqa
+            marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
+            if marked_for_deletion_users.count() > 0:
+                logger.info("sending request to party service to remove ")
+                delete_party_respondents(marked_for_deletion_users)
+                marked_for_deletion_users.delete()
+                logger.info("Scheduler successfully deleted users marked for deletion")
+            else:
+                logger.info("No user marked for deletion at this time. Nothing to delete.")
 
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler delete operation")
         return make_response(jsonify({"title": "Scheduler operation for delete users error",
                                       "detail": "Unable to perform delete operation"}), 500)
-    logger.info("Scheduler successfully deleted users marked for deletion")
     return '', 204
+
+
+def auth_headers():
+    return {
+        'Authorization': 'Basic %s' % base64.b64encode(
+            bytes(app.config['SECURITY_USER_NAME'] + ':' + app.config['SECURITY_USER_PASSWORD'],
+                  "utf-8")).decode("ascii")
+    }
+
+
+def create_request(method, path, body, headers):
+    return {"method": method,
+            "path": path,
+            "body": body,
+            "headers": headers}
+
+
+def delete_party_respondents(users):
+    batch_url = f'{app.config["PARTY_URL"]}/party-api/v1/batch/requests'
+    payload = []
+    for user in users:
+        payload.append(
+            create_request("DELETE", "/party-api/v1/respondents/email", {'email': user.username},
+                           auth_headers()), )
+
+    try:
+        response = requests.post(batch_url, auth=app.config['BASIC_AUTH'], data=json.dumps(payload))
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as error:
+        logger.exception("Unable to send request to party service for user deletion. Can't proceed with user deletion.",
+                         error=error)
+        raise error
+
+    logger.info('Successfully sent request to party service for user deletion', status_code=response.status_code,
+                response_json=response.json())

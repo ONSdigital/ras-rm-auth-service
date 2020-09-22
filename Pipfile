@@ -17,6 +17,7 @@ flask-httpauth = "*"
 requestsdefaulter = "*"
 marshmallow = "==3.0.0rc6"
 gevent = {version = "*",platform_python_implementation = "=='CPython'"}
+requests = "*"
 
 [dev-packages]
 testfixtures = "*"
