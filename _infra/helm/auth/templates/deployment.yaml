@@ -124,6 +124,12 @@ spec:
               secretKeyRef:
                 name: security-credentials
                 key: security-password
+          - name: PARTY_URL
+            {{- if .Values.dns.enabled }}
+            value: "http://party.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
+            {{- else }}
+            value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
+            {{- end }}
           - name: PORT
             value: "{{ .Values.container.port }}"
           - name: APP_SETTINGS

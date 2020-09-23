@@ -11,6 +11,8 @@ class Config(object):
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
     DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/postgres")
+    PARTY_URL = os.getenv('PARTY_URL')
+    BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
 
 
 class DevelopmentConfig(Config):
@@ -26,3 +28,4 @@ class TestingConfig(Config):
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres")
+    BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)

@@ -1,5 +1,6 @@
 import base64
 import unittest
+from collections import namedtuple
 from unittest.mock import patch
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -379,7 +380,11 @@ class TestAccount(unittest.TestCase):
         self.assertTrue(self.is_user_marked_for_deletion(user_1))
         self.assertTrue(self.is_user_marked_for_deletion(user_3))
         self.assertFalse(self.is_user_marked_for_deletion(user_2))
-        batch_delete_request = self.client.delete('/api/account/batch/users', headers=self.headers)
+        fake_response = namedtuple('Response', 'status_code json')
+        with patch('ras_rm_auth_service.resources.account.requests') as mock_request:
+            mock_request().post.return_value = fake_response(status_code=207, json=lambda: [])
+            batch_delete_request = self.client.delete('/api/account/batch/users', headers=self.headers)
+            mock_request.post().assert_called_once
         self.assertEqual(batch_delete_request.status_code, 204)
         self.assertTrue(self.does_user_exists(user_2))
         self.assertFalse(self.does_user_exists(user_0))
@@ -416,7 +421,11 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(create_user_3.status_code, 201)
         self.assertEqual(create_user_3.get_json(), {"account": user_3, "created": "success"})
         self.assertTrue(self.does_user_exists(user_3))
-        batch_delete_request = self.client.delete('/api/account/batch/users', headers=self.headers)
+        fake_response = namedtuple('Response', 'status_code json')
+        with patch('ras_rm_auth_service.resources.account.requests') as mock_request:
+            mock_request().post.return_value = fake_response(status_code=207, json=lambda: [])
+            batch_delete_request = self.client.delete('/api/account/batch/users', headers=self.headers)
+            mock_request.post().assert_called_once
         self.assertEqual(batch_delete_request.status_code, 204)
         self.assertTrue(self.does_user_exists(user_2))
         self.assertTrue(self.does_user_exists(user_0))
