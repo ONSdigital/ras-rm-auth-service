@@ -29,6 +29,6 @@ spec:
             args:
             - /bin/sh
             - -c
-            - curl -w -u $(SECURITY_USER_NAME):$(SECURITY_USER_PASSWORD) -X DELETE http://$(AUTH_SERVICE_HOST):$(AUTH_SERVICE_PORT)/$(DELETE_TARGET)
-            - curl -w -u $(SECURITY_USER_NAME):$(SECURITY_USER_PASSWORD) -X DELETE http://$(AUTH_SERVICE_HOST):$(AUTH_SERVICE_PORT)/$(MARK_FOR_DELETE_TARGET)
+            - curl -u $(SECURITY_USER_NAME):$(SECURITY_USER_PASSWORD) -X DELETE http://$(AUTH_SERVICE_HOST):$(AUTH_SERVICE_PORT)/$(DELETE_TARGET)
+            - curl -u $(SECURITY_USER_NAME):$(SECURITY_USER_PASSWORD) -X DELETE http://$(AUTH_SERVICE_HOST):$(AUTH_SERVICE_PORT)/$(MARK_FOR_DELETE_TARGET)
           restartPolicy: OnFailure
