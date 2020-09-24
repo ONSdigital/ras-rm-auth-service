@@ -153,7 +153,8 @@ def delete_accounts():
 @account.route('/batch/users/mark-for-deletion', methods=['DELETE'])
 def mark_for_deletion_accounts():
     """
-    Deletes all user marked for deletion. to be called from scheduler
+    Marks user accounts for deletion which has not been accessed in the last 36 months.
+    To be called from scheduler
     """
     try:
         with transactional_session() as session:

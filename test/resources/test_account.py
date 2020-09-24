@@ -344,7 +344,7 @@ class TestAccount(unittest.TestCase):
 
     def test_batch_delete(self):
         """
-        Test create user end point
+        Test bach delete
         """
         user_0 = "test0@email.com"
         user_1 = "test1@email.com"
@@ -398,7 +398,7 @@ class TestAccount(unittest.TestCase):
 
     def test_batch_delete_with_out_users_marked_for_deletion(self):
         """
-        Test create user end point
+        Test Batch delete
         """
         user_0 = "test0@email.com"
         user_1 = "test1@email.com"
@@ -483,6 +483,9 @@ class TestAccount(unittest.TestCase):
         self.assertFalse(self.is_user_marked_for_deletion(user_3))
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_null(self):
+        """
+          Test scheduler endpoint for the account not accessed in the last 36 months
+        """
         user_0 = "test0@email.com"
         user_1 = "test1@email.com"
         user_2 = "test2@email.com"
@@ -519,6 +522,9 @@ class TestAccount(unittest.TestCase):
         self.assertFalse(self.is_user_marked_for_deletion(user_3))
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_present(self):
+        """
+          Test scheduler endpoint for the account not accessed in the last 36 months
+        """
         user_0 = "test0@email.com"
         user_1 = "test1@email.com"
         user_2 = "test2@email.com"
