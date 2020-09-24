@@ -159,17 +159,17 @@ def mark_for_deletion_accounts():
     try:
         with transactional_session() as session:
             logger.info("Scheduler processing Accounts not accessed in the last 36 months ")
-            _since_360_days = datetime.now() - timedelta(days=1095)
-            _last_login_before_360_months = session.query(User).filter(and_(
+            _since_36_months = datetime.now() - timedelta(days=1095)
+            _last_login_before_36_months = session.query(User).filter(and_(
                 User.last_login_date != None,  # noqa
-                User.last_login_date < _since_360_days
+                User.last_login_date < _since_36_months
             ))
-            _last_login_before_360_months.update({'mark_for_deletion': True})
-            _account_created_before_360_months = session.query(User).filter(and_(
+            _last_login_before_36_months.update({'mark_for_deletion': True})
+            _account_created_before_36_months = session.query(User).filter(and_(
                 User.last_login_date == None,  # noqa
-                User.account_creation_date < _since_360_days
+                User.account_creation_date < _since_36_months
             ))
-            _account_created_before_360_months.update({'mark_for_deletion': True})
+            _account_created_before_36_months.update({'mark_for_deletion': True})
             logger.info("Scheduler finished processing Accounts not accessed in last 36 months")
 
     except SQLAlchemyError:
