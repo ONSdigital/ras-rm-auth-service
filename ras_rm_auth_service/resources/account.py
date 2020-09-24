@@ -1,11 +1,12 @@
 import base64
 import json
 import logging
+from datetime import datetime, timedelta
 
 import requests
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import structlog
@@ -146,6 +147,35 @@ def delete_accounts():
         logger.exception("Unable to perform scheduler delete operation")
         return make_response(jsonify({"title": "Scheduler operation for delete users error",
                                       "detail": "Unable to perform delete operation"}), 500)
+    return '', 204
+
+
+@account.route('/batch/users/mark-for-deletion', methods=['DELETE'])
+def mark_for_deletion_accounts():
+    """
+    Deletes all user marked for deletion. to be called from scheduler
+    """
+    try:
+        with transactional_session() as session:
+            logger.info("Scheduler processing Accounts not accessed in the last 36 months ")
+            _since_360_days = datetime.now() - timedelta(days=1095)
+            _last_login_before_360_months = session.query(User).filter(and_(
+                User.last_login_date != None,  # noqa
+                User.last_login_date < _since_360_days
+            ))
+            _last_login_before_360_months.update({'mark_for_deletion': True})
+            _account_created_before_360_months = session.query(User).filter(and_(
+                User.last_login_date == None,  # noqa
+                User.account_creation_date < _since_360_days
+            ))
+            _account_created_before_360_months.update({'mark_for_deletion': True})
+            logger.info("Scheduler finished processing Accounts not accessed in last 36 months")
+
+    except SQLAlchemyError:
+        logger.exception("Unable to perform scheduler mark for delete operation")
+        return make_response(jsonify({"title": "Scheduler operation for mark for delete users error",
+                                      "detail": "Unable to perform delete operation for accounts not accessed in last "
+                                                "36 months"}), 500)
     return '', 204
 
 
