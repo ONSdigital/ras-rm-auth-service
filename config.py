@@ -13,6 +13,15 @@ class Config(object):
     DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/postgres")
     PARTY_URL = os.getenv('PARTY_URL')
     BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
+    DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE = os.getenv('DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE',
+                                                         'due_deletion_first_notification_templates')
+    DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE = os.getenv('DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE',
+                                                          'due_deletion_second_notification_templates')
+    DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE = os.getenv('DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE',
+                                                         'due_deletion_third_notification_templates')
+    SEND_EMAIL_TO_GOV_NOTIFY = os.getenv('SEND_EMAIL_TO_GOV_NOTIFY', True)
+    PUBSUB_TOPIC = os.getenv('PUBSUB_TOPIC', 'ras-rm-notify-test')
+    GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'test-project-id')
 
 
 class DevelopmentConfig(Config):

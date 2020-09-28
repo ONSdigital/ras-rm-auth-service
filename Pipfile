@@ -18,6 +18,7 @@ requestsdefaulter = "*"
 marshmallow = "==3.0.0rc6"
 gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 requests = "*"
+google-cloud-pubsub = "*"
 
 [dev-packages]
 testfixtures = "*"

@@ -19,8 +19,11 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
-      {{- if .Values.database.sqlProxyEnabled }}
       volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: google-application-credentials
+        {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-proxy-credentials
@@ -28,7 +31,7 @@ spec:
             items:
             - key: "credentials.json"
               path: "credentials.json"
-      {{- end }}
+        {{- end }}
       containers:
         {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-proxy
@@ -124,6 +127,20 @@ spec:
               secretKeyRef:
                 name: security-credentials
                 key: security-password
+          - name: GOOGLE_CLOUD_PROJECT
+            value: "{{ .Values.gcp.project }}"
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/credentials.json
+          - name: PUBSUB_TOPIC
+            value: "{{ .Values.gcp.topic }}"
+          - name: DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE
+            value: "{{ .Values.notify.dueDeletionFirstNotificationTemplate }}"
+          - name: DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE
+            value: "{{ .Values.notify.dueDeletionSecondNotificationTemplate }}"
+          - name: DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
+            value: "{{ .Values.notify.dueDeletionThirdNotificationTemplate }}"
+          - name: SEND_EMAIL_TO_GOV_NOTIFY
+            value: "{{ .Values.sendEmailToGovNotify }}"
           - name: PARTY_URL
             {{- if .Values.dns.enabled }}
             value: "http://party.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"

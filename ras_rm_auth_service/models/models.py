@@ -28,8 +28,11 @@ class User(Base):
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
     last_login_date = Column(DateTime, default=None, nullable=True)
-    mark_for_deletion = Column(Boolean, default=False)
     account_creation_date = Column(DateTime, default=datetime.utcnow)
+    due_deletion_first_notification_date = Column(DateTime, default=None, nullable=True)
+    due_deletion_second_notification_date = Column(DateTime, default=None, nullable=True)
+    due_deletion_third_notification_date = Column(DateTime, default=None, nullable=True)
+    mark_for_deletion = Column(Boolean, default=False)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
@@ -83,11 +86,17 @@ class User(Base):
 
         self.reset_failed_logins()
         self.update_last_login_date()
+        self.reset_due_deletion_dates()
 
         return True
 
     def update_last_login_date(self):
         self.last_login_date = datetime.now(timezone.utc)
+
+    def reset_due_deletion_dates(self):
+        self.due_deletion_first_notification_date = None
+        self.due_deletion_second_notification_date = None
+        self.due_deletion_third_notification_date = None
 
 
 class AccountSchema(Schema):

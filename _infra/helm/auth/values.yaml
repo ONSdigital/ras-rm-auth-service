@@ -33,8 +33,30 @@ dns:
   wellKnownPort: 8080
 
 crons:
-  markForDeletionScheduler:
-    name: auth-scheduler-delete-users
+  deleteUsersScheduler:
+    name: auth-delete-users-scheduled-job
+    cron: "0 0 * * *"
+    target: "/api/batch/account/users"
+  markUsersForDeletionScheduler:
+    name: auth-mark-users-for-deletion-scheduled-job
+    cron: "0 1 * * *"
+    target: "/api/batch/account/users/mark-for-deletion"
+  dueDeletionThirdNotificationScheduler:
+    name: auth-third-deletion-notification-scheduled-job
+    cron: "0 2 * * *"
+    target: "/api/batch/account/users/third-notification"
+  dueDeletionSecondNotificationScheduler:
+    name: auth-second-deletion-notification-scheduled-job
     cron: "0 3 * * *"
-    del_target: "api/account/batch/users"
-    mark_for_del_target: "api/account/batch/users/mark-for-deletion"
+    target: "/api/batch/account/users/second-notification"
+  dueDeletionFirstNotificationScheduler:
+    name: auth-first-deletion-notification-scheduled-job
+    cron: "0 4 * * *"
+    target: "/api/batch/account/users/first-notification"
+
+notify:
+  dueDeletionFirstNotificationTemplate: due_deletion_first_notification_templates
+  dueDeletionSecondNotificationTemplate: due_deletion_second_notification_templates
+  dueDeletionThirdNotificationTemplate: due_deletion_third_notification_templates
+
+sendEmailToGovNotify: true

@@ -1,0 +1,31 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .Values.crons.dueDeletionThirdNotificationScheduler.name }}
+spec:
+  schedule: "{{ .Values.crons.dueDeletionThirdNotificationScheduler.cron }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .Values.crons.dueDeletionThirdNotificationScheduler.name }}
+            image: radial/busyboxplus:curl
+            env:
+            - name: SECURITY_USER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: security-credentials
+                  key: security-user
+            - name: SECURITY_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: security-credentials
+                  key: security-password
+            - name: TARGET
+              value: {{ .Values.crons.dueDeletionThirdNotificationScheduler.target }}
+            args:
+            - /bin/sh
+            - -c
+            - curl -u $(SECURITY_USER_NAME):$(SECURITY_USER_PASSWORD) -X POST http://$(AUTH_SERVICE_HOST):$(AUTH_SERVICE_PORT)/$(TARGET)
+          restartPolicy: OnFailure
