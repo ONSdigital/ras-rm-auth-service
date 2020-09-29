@@ -47,8 +47,6 @@ spec:
             - name: cloudsql-instance-credentials
               mountPath: /secrets/cloudsql
               readOnly: true
-            - name: google-cloud-key
-              mountPath: /var/secrets/google
           env:
           - name: SQL_INSTANCE_NAME
             valueFrom:
@@ -67,7 +65,9 @@ spec:
           {{- else}}
           image: "{{ .Values.image.devRepo }}/{{ .Chart.Name }}:{{ .Values.image.tag }}"
           {{- end}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - name: google-cloud-key
+            mountPath: /var/secrets/google
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
