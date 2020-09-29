@@ -242,8 +242,9 @@ class TestBatchProcessEndpoints(unittest.TestCase):
             self.assertFalse(self.is_third_notification_set(self.user_2))
             self.assertFalse(self.is_third_notification_set(self.user_1))
             self.assertFalse(self.is_third_notification_set(self.user_3))
-            mock_notify.request_to_notify.assert_called_with(template_name='due_deletion_third_notification_templates',
-                                                             email=(self.user_0,))
+            mock_notify().request_to_notify.assert_called_with(
+                template_name='due_deletion_third_notification_templates',
+                email=(self.user_0,))
         self.update_test_data(self.user_2, criteria_1)
         self.update_test_data(self.user_2, criteria_2)
         with patch('ras_rm_auth_service.batch_process_endpoints.NotifyService') as mock_notify:
@@ -254,8 +255,9 @@ class TestBatchProcessEndpoints(unittest.TestCase):
             self.assertTrue(self.is_third_notification_set(self.user_2))
             self.assertFalse(self.is_third_notification_set(self.user_1))
             self.assertFalse(self.is_third_notification_set(self.user_3))
-            mock_notify.request_to_notify.assert_called_with(template_name='due_deletion_third_notification_templates',
-                                                             email=(self.user_2,))
+            mock_notify().request_to_notify.assert_called_with(
+                template_name='due_deletion_third_notification_templates',
+                email=(self.user_2,))
         self.update_test_data(self.user_3, criteria_3)
         with patch('ras_rm_auth_service.batch_process_endpoints.NotifyService') as mock_notify:
             mock_notify().request_to_notify.return_value = mock.Mock()
@@ -265,8 +267,9 @@ class TestBatchProcessEndpoints(unittest.TestCase):
             self.assertTrue(self.is_third_notification_set(self.user_2))
             self.assertFalse(self.is_third_notification_set(self.user_1))
             self.assertTrue(self.is_third_notification_set(self.user_3))
-            mock_notify.request_to_notify.assert_called_with(template_name='due_deletion_third_notification_templates',
-                                                             email=(self.user_3,))
+            mock_notify().request_to_notify.assert_called_with(
+                template_name='due_deletion_third_notification_templates',
+                email=(self.user_3,))
 
     @patch('ras_rm_auth_service.batch_process_endpoints.transactional_session')
     def test_batch_third_due_deletion_notification_unable_to_commit(self, session_scope_mock):

@@ -68,8 +68,8 @@ def send_third_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _last_login_before_35_months:
-                NotifyService.request_to_notify(template_name='due_deletion_third_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_third_notification_templates',
+                                                  email=username)
             _last_login_before_35_months.update({'due_deletion_third_notification_date': datetime.utcnow()})
             _account_created_before_35_months = session.query(User.username).filter(and_(
                 User.last_login_date == None,  # noqa
@@ -78,11 +78,10 @@ def send_third_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _account_created_before_35_months:
-                NotifyService.request_to_notify(template_name='due_deletion_third_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_third_notification_templates',
+                                                  email=username)
             _account_created_before_35_months.update({'due_deletion_third_notification_date': datetime.utcnow()})
             logger.info("Scheduler finished processing Accounts not accessed in last 35 months")
-
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler send due deletion third notification")
         return make_response(jsonify({"title": "Scheduler operation for due deletion third notification error",
@@ -109,8 +108,8 @@ def send_second_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _last_login_before_30_months:
-                NotifyService.request_to_notify(template_name='due_deletion_second_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_second_notification_templates',
+                                                  email=username)
             _last_login_before_30_months.update({'due_deletion_second_notification_date': datetime.utcnow()})
             _account_created_before_30_months = session.query(User.username).filter(and_(
                 User.last_login_date == None,  # noqa
@@ -119,8 +118,8 @@ def send_second_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _account_created_before_30_months:
-                NotifyService.request_to_notify(template_name='due_deletion_second_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_second_notification_templates',
+                                                  email=username)
             _account_created_before_30_months.update({'due_deletion_second_notification_date': datetime.utcnow()})
             logger.info("Scheduler finished processing Accounts not accessed in last 30 months")
 
@@ -150,8 +149,8 @@ def send_first_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _last_login_before_24_months:
-                NotifyService.request_to_notify(template_name='due_deletion_first_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_first_notification_templates',
+                                                  email=username)
             _last_login_before_24_months.update({'due_deletion_first_notification_date': datetime.utcnow()})
             _account_created_before_24_months = session.query(User.username).filter(and_(
                 User.last_login_date == None,  # noqa
@@ -160,8 +159,8 @@ def send_first_notifications():
                 User.due_deletion_third_notification_date == None  # noqa
             ))
             for username in _account_created_before_24_months:
-                NotifyService.request_to_notify(template_name='due_deletion_first_notification_templates',
-                                                email=username)
+                NotifyService().request_to_notify(template_name='due_deletion_first_notification_templates',
+                                                  email=username)
             _account_created_before_24_months.update({'due_deletion_first_notification_date': datetime.utcnow()})
             logger.info("Scheduler finished processing Accounts not accessed in last 24 months")
 

@@ -47,6 +47,8 @@ spec:
             - name: cloudsql-instance-credentials
               mountPath: /secrets/cloudsql
               readOnly: true
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
           env:
           - name: SQL_INSTANCE_NAME
             valueFrom:
