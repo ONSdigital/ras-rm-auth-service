@@ -29,7 +29,8 @@ class NotifyService:
         notification = {
             'notify': {
                 'email_address': email,
-                'template_id': template_id
+                'template_id': template_id,
+                'personalisation': {}
             }
         }
         notification_str = json.dumps(notification)
