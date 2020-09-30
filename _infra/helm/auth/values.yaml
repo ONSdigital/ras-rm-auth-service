@@ -41,18 +41,10 @@ crons:
     name: auth-mark-users-for-deletion-scheduled-job
     cron: "0 1 * * *"
     target: "/api/batch/account/users/mark-for-deletion"
-  dueDeletionThirdNotificationScheduler:
-    name: auth-third-deletion-notification-scheduled-job
+  dueDeletionNotificationScheduler:
+    name: auth-due-deletion-notification-scheduled-job
     cron: "0 2 * * *"
-    target: "/api/batch/account/users/third-notification"
-  dueDeletionSecondNotificationScheduler:
-    name: auth-second-deletion-notification-scheduled-job
-    cron: "0 3 * * *"
-    target: "/api/batch/account/users/second-notification"
-  dueDeletionFirstNotificationScheduler:
-    name: auth-first-deletion-notification-scheduled-job
-    cron: "0 4 * * *"
-    target: "/api/batch/account/users/first-notification"
+    image: auth-scheduler
 
 notify:
   dueDeletionFirstNotificationTemplate: due_deletion_first_notification_templates
