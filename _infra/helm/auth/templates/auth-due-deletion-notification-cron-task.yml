@@ -44,27 +44,6 @@ spec:
               volumeMounts:
               - name: google-cloud-key
                 mountPath: /var/secrets/google
-              ports:
-                - name: http-server
-                  containerPort: {{ .Values.container.port }}
-              readinessProbe:
-                httpGet:
-                  path: /info
-                  port: {{ .Values.container.port }}
-                initialDelaySeconds: 1
-                periodSeconds: 20
-                failureThreshold: 5
-                successThreshold: 1
-                timeoutSeconds: 5
-              livenessProbe:
-                httpGet:
-                  path: /info
-                  port: {{ .Values.container.port }}
-                initialDelaySeconds: 1
-                periodSeconds: 20
-                failureThreshold: 5
-                successThreshold: 1
-                timeoutSeconds: 5
               env:
               - name: DB_HOST
                 {{- if .Values.database.managedPostgres }}
@@ -125,10 +104,6 @@ spec:
                 {{- else }}
                 value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
                 {{- end }}
-              - name: PORT
-                value: "{{ .Values.container.port }}"
-              - name: APP_SETTINGS
-                value: "DevelopmentConfig"
               - name: DATABASE_URI
                 {{- if .Values.database.sqlProxyEnabled }}
                 value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@127.0.0.1:$(DB_PORT)/$(DB_NAME)"
