@@ -8,17 +8,56 @@ spec:
     spec:
       template:
         spec:
+          volumes:
+            - name: google-cloud-key
+              secret:
+                secretName: google-application-credentials
+            {{- if .Values.database.sqlProxyEnabled }}
+            - name: cloudsql-instance-credentials
+              secret:
+                secretName: cloudsql-proxy-credentials
+                defaultMode: 0444
+                items:
+                - key: "credentials.json"
+                  path: "credentials.json"
+            {{- end }}
           containers:
-            - name: {{ .Values.crons.dueDeletionNotificationScheduler.image }}
-              {{- if eq .Values.image.tag "latest"}}
-              image: "{{ .Values.image.name }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Chart.AppVersion }}"
-              {{- else}}
-              image: "{{ .Values.image.devRepo }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Values.image.tag }}"
-              {{- end}}
-              volumeMounts:
+          {{- if .Values.database.sqlProxyEnabled }}
+          - name: cloudsql-proxy
+            image: gcr.io/cloudsql-docker/gce-proxy:1.16
+            command: ["/cloud_sql_proxy",
+                      "-instances=$(SQL_INSTANCE_NAME)=tcp:$(DB_PORT)",
+                      "-ip_address_types=PRIVATE",
+                      "-credential_file=/secrets/cloudsql/credentials.json"]
+            securityContext:
+              runAsUser: 2  # non-root user
+              allowPrivilegeEscalation: false
+            volumeMounts:
+              - name: cloudsql-instance-credentials
+                mountPath: /secrets/cloudsql
+                readOnly: true
+            env:
+            - name: SQL_INSTANCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cloudsql-proxy-config
+                  key: instance-connection-name
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: db-config
+                  key: db-port
+          {{- end }}
+          - name: {{ .Values.crons.dueDeletionNotificationScheduler.image }}
+            {{- if eq .Values.image.tag "latest"}}
+            image: "{{ .Values.image.name }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Chart.AppVersion }}"
+            {{- else}}
+            image: "{{ .Values.image.devRepo }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Values.image.tag }}"
+            {{- end}}
+            volumeMounts:
               - name: google-cloud-key
                 mountPath: /var/secrets/google
-              env:
+            env:
               - name: DB_HOST
                 {{- if .Values.database.managedPostgres }}
                 valueFrom:
@@ -78,6 +117,10 @@ spec:
                 {{- else }}
                 value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
                 {{- end }}
+              - name: PORT
+                value: "{{ .Values.container.port }}"
+              - name: APP_SETTINGS
+                value: "DevelopmentConfig"
               - name: DATABASE_URI
                 {{- if .Values.database.sqlProxyEnabled }}
                 value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@127.0.0.1:$(DB_PORT)/$(DB_NAME)"
@@ -86,6 +129,6 @@ spec:
                 {{- end }}
               - name: LOGGING_LEVEL
                 value: "DEBUG"
-              resources:
-                {{ toYaml .Values.resources | nindent 12 }}          
+            resources:
+              {{ toYaml .Values.resources | nindent 12 }}
           restartPolicy: OnFailure
