@@ -129,6 +129,4 @@ spec:
                 {{- end }}
               - name: LOGGING_LEVEL
                 value: "DEBUG"
-            resources:
-              {{ toYaml .Values.resources | nindent 12 }}
           restartPolicy: OnFailure
