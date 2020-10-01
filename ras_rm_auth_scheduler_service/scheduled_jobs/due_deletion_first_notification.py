@@ -12,7 +12,7 @@ def process_accounts_for_first_notification():
     csr = con.cursor()
     _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
     _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-    query = get_query(_datetime_30_months_ago, _datetime_24_months_ago)
+    query = get_query(_datetime_30_months_ago, _datetime_24_months_ago, "due_deletion_first_notification_date")
     csr.execute(query)
     users = [x for x in chain.from_iterable(csr.fetchall()) if isinstance(x, str)]
     for username in users:

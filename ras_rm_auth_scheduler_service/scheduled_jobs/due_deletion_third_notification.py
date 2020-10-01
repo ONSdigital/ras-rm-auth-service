@@ -12,7 +12,7 @@ def process_accounts_for_third_notification():
     csr = con.cursor()
     _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
     _datetime_36_months_ago = datetime.utcnow() - timedelta(days=1095)
-    query = get_query(_datetime_36_months_ago, _datetime_35_months_ago)
+    query = get_query(_datetime_36_months_ago, _datetime_35_months_ago, "due_deletion_third_notification_date")
     csr.execute(query)
     users = [x for x in chain.from_iterable(csr.fetchall()) if isinstance(x, str)]
     for username in users:

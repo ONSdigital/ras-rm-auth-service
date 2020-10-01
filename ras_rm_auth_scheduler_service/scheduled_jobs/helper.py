@@ -27,12 +27,12 @@ configure(processors=[add_severity_level, add_log_level, filter_by_level, format
 logger = wrap_logger(logging.getLogger(__name__))
 
 
-def get_query(date_one, date_two):
+def get_query(date_one, date_two, template_date_column):
     return "SELECT auth.user.username FROM auth.user where (auth.user.last_login_date is null AND " \
            f"auth.user.account_creation_date between '{date_one}' AND '{date_two}' AND " \
-           "auth.user.due_deletion_first_notification_date is null) OR (auth.user.last_login_date is not null AND " \
+           f"auth.user.{template_date_column} is null) OR (auth.user.last_login_date is not null AND " \
            f"auth.user.last_login_date between '{date_one}' AND '{date_two}' AND " \
-           "auth.user.due_deletion_first_notification_date is null) "
+           f"auth.user.{template_date_column} is null) "
 
 
 class AuthDueDeletionSchedulerError(Exception):
