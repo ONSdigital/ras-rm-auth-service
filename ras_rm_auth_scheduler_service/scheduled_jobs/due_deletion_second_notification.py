@@ -7,6 +7,9 @@ from ras_rm_auth_scheduler_service.scheduled_jobs.notify_service import NotifySe
 
 
 def process_accounts_for_second_notification():
+    """
+        Sends Notification to the user accounts which has not been accessed in the last 30 months
+    """
     logger.info("Scheduler processing Accounts not accessed in the last 30 months ")
     con = setup.get_connection()
     csr = con.cursor()

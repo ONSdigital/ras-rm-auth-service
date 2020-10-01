@@ -17,13 +17,7 @@ def get_database():
 
 def get_engine():
     """
-    Get SQLalchemy engine using credentials.
-    Input:
-    db: database name
-    user: Username
-    host: Hostname of the database server
-    port: Port number
-    passwd: Password for the database
+    Get SQLalchemy engine using URL.
     """
 
     url = cfg.Config.DATABASE_URI
@@ -32,6 +26,9 @@ def get_engine():
 
 
 def get_connection():
+    """
+    Get DB connection
+    """
     try:
         con = get_database().raw_connection()
         con.cursor().execute("SET SCHEMA '{}'".format(cfg.Config.DATABASE_SCHEMA))

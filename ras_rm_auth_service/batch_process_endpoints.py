@@ -13,7 +13,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User
-from ras_rm_auth_service.notify_service import NotifyService
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -48,128 +47,6 @@ def delete_accounts():
         return make_response(jsonify({"title": "Scheduler operation for delete users error",
                                       "detail": "Unable to perform delete operation"}), 500)
     return '', 204
-
-
-@batch.route('users/third-notification', methods=['POST'])
-def send_third_notifications():
-    """
-    sends due deletion third notification for users who's account has not been accessed for the last 35 months
-    (account accessed is <= 35 months and >= 36 months) via NotifyService (pubsub)
-    """
-    try:
-        with transactional_session() as session:
-            logger.info("Scheduler processing Accounts not accessed in the last 35 months ")
-            _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
-            _datetime_36_months_ago = datetime.utcnow() - timedelta(days=1095)
-            _last_login_before_35_months = session.query(User.username).filter(and_(
-                User.last_login_date != None,  # noqa
-                User.last_login_date <= _datetime_35_months_ago,
-                User.last_login_date >= _datetime_36_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _last_login_before_35_months:
-                NotifyService().request_to_notify(template_name='due_deletion_third_notification_templates',
-                                                  email=username)
-            _last_login_before_35_months.update({'due_deletion_third_notification_date': datetime.utcnow()})
-            _account_created_before_35_months = session.query(User.username).filter(and_(
-                User.last_login_date == None,  # noqa
-                User.account_creation_date <= _datetime_35_months_ago,
-                User.account_creation_date >= _datetime_36_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _account_created_before_35_months:
-                NotifyService().request_to_notify(template_name='due_deletion_third_notification_templates',
-                                                  email=username)
-            _account_created_before_35_months.update({'due_deletion_third_notification_date': datetime.utcnow()})
-            logger.info("Scheduler finished processing Accounts not accessed in last 35 months")
-    except SQLAlchemyError:
-        logger.exception("Unable to perform scheduler send due deletion third notification")
-        return make_response(jsonify({"title": "Scheduler operation for due deletion third notification error",
-                                      "detail": "Unable to send emails for the third due deletion notification for "
-                                                "accounts not accessed in last 35 months."}), 500)
-    return make_response("Success", 201)
-
-
-@batch.route('users/second-notification', methods=['POST'])
-def send_second_notifications():
-    """
-    sends due deletion second notification for users who's account has not been accessed for the last 30 months
-    (account accessed is <= 30 months and >= 35 months) via NotifyService (pubsub)
-    """
-    try:
-        with transactional_session() as session:
-            logger.info("Scheduler processing Accounts not accessed in the last 30 months ")
-            _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
-            _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-            _last_login_before_30_months = session.query(User.username).filter(and_(
-                User.last_login_date != None,  # noqa
-                User.last_login_date <= _datetime_30_months_ago,
-                User.last_login_date >= _datetime_35_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _last_login_before_30_months:
-                NotifyService().request_to_notify(template_name='due_deletion_second_notification_templates',
-                                                  email=username)
-            _last_login_before_30_months.update({'due_deletion_second_notification_date': datetime.utcnow()})
-            _account_created_before_30_months = session.query(User.username).filter(and_(
-                User.last_login_date == None,  # noqa
-                User.account_creation_date <= _datetime_30_months_ago,
-                User.account_creation_date >= _datetime_35_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _account_created_before_30_months:
-                NotifyService().request_to_notify(template_name='due_deletion_second_notification_templates',
-                                                  email=username)
-            _account_created_before_30_months.update({'due_deletion_second_notification_date': datetime.utcnow()})
-            logger.info("Scheduler finished processing Accounts not accessed in last 30 months")
-
-    except SQLAlchemyError:
-        logger.exception("Unable to perform scheduler send due deletion second notification")
-        return make_response(jsonify({"title": "Scheduler operation for due deletion second notification error",
-                                      "detail": "Unable to send emails for the second due deletion notification for "
-                                                "accounts not accessed in last 30 months."}), 500)
-    return make_response("Success", 201)
-
-
-@batch.route('users/first-notification', methods=['POST'])
-def send_first_notifications():
-    """
-    sends due deletion second notification for users who's account has not been accessed for the last 24 months
-    (account accessed is <= 24 months and >= 30 months) via NotifyService (pubsub)
-    """
-    try:
-        with transactional_session() as session:
-            logger.info("Scheduler processing Accounts not accessed in the last 24 months ")
-            _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
-            _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-            _last_login_before_24_months = session.query(User.username).filter(and_(
-                User.last_login_date != None,  # noqa
-                User.last_login_date <= _datetime_24_months_ago,
-                User.last_login_date >= _datetime_30_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _last_login_before_24_months:
-                NotifyService().request_to_notify(template_name='due_deletion_first_notification_templates',
-                                                  email=username)
-            _last_login_before_24_months.update({'due_deletion_first_notification_date': datetime.utcnow()})
-            _account_created_before_24_months = session.query(User.username).filter(and_(
-                User.last_login_date == None,  # noqa
-                User.account_creation_date <= _datetime_24_months_ago,
-                User.account_creation_date >= _datetime_30_months_ago.date(),
-                User.due_deletion_third_notification_date == None  # noqa
-            ))
-            for username in _account_created_before_24_months:
-                NotifyService().request_to_notify(template_name='due_deletion_first_notification_templates',
-                                                  email=username)
-            _account_created_before_24_months.update({'due_deletion_first_notification_date': datetime.utcnow()})
-            logger.info("Scheduler finished processing Accounts not accessed in last 24 months")
-
-    except SQLAlchemyError:
-        logger.exception("Unable to perform scheduler send due deletion first notification")
-        return make_response(jsonify({"title": "Scheduler operation for due deletion first notification error",
-                                      "detail": "Unable to send emails for the first due deletion notification for "
-                                                "accounts not accessed in last 24 months."}), 500)
-    return make_response("Success", 201)
 
 
 @batch.route('users/mark-for-deletion', methods=['DELETE'])
