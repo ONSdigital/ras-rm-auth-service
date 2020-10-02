@@ -31,7 +31,7 @@ class TestNotifyService(unittest.TestCase):
             result = notify.request_to_notify(email='test@test.test',
                                               template_name='due_deletion_first_notification_templates')
             data = b'{"notify": {"email_address": "test@test.test", ' \
-                   b'"template_id": "due_deletion_first_notification_templates", "personalisation": {"first_name": ' \
+                   b'"template_id": "due_deletion_first_notification_templates", "personalisation": {"FIRST_NAME": ' \
                    b'"test"}}}'
 
             publisher.publish.assert_called()
