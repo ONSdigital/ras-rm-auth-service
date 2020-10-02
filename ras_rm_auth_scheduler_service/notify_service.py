@@ -14,7 +14,7 @@ class NotifyService:
         self.third_notification = cfg.Config.DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
         self.topic_id = cfg.Config.PUBSUB_TOPIC
         self.project_id = cfg.Config.GOOGLE_CLOUD_PROJECT
-        self.publisher = pubsub_v1.PublisherClient()
+        self.publisher = None
         self.party_url = cfg.Config.PARTY_URL
         self.basic_auth = cfg.Config.BASIC_AUTH
 
@@ -39,6 +39,8 @@ class NotifyService:
             notification['notify']['personalisation'] = personalisation
 
         notification_str = json.dumps(notification)
+        if self.publisher is None:
+            self.publisher = pubsub_v1.PublisherClient()
         topic_path = self.publisher.topic_path(self.project_id, self.topic_id)
         logger.info('Publishing notification message to pub-sub topic', pubsub_topic=self.topic_id)
         future = self.publisher.publish(topic_path, data=notification_str.encode())
