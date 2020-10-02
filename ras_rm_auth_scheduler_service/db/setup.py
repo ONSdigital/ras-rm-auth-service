@@ -1,21 +1,24 @@
+
 from sqlalchemy import create_engine
+
 import config as cfg
 
-from ras_rm_auth_scheduler_service.helper import logger as log, AuthDueDeletionSchedulerError
+from ras_rm_auth_scheduler_service.helper import AuthDueDeletionSchedulerError
+from ras_rm_auth_scheduler_service.logger import logger
 
 
-def get_database():
+def _get_database():
     try:
-        engine = get_engine()
-        log.info("Connected to database!")
+        engine = _get_engine()
+        logger.info("Connected to database!")
     except IOError:
-        log.exception("Failed to get database connection!")
+        logger.exception("Failed to get database connection!")
         raise IOError
 
     return engine
 
 
-def get_engine():
+def _get_engine():
     """
     Get SQLalchemy engine using URL.
     """
@@ -30,9 +33,10 @@ def get_connection():
     Get DB connection
     """
     try:
-        con = get_database().raw_connection()
+        con = _get_database().raw_connection()
         con.cursor().execute("SET SCHEMA '{}'".format(cfg.Config.DATABASE_SCHEMA))
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         raise AuthDueDeletionSchedulerError('Unable to establish database connection.')
 
     return con

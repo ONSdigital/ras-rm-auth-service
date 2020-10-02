@@ -20,9 +20,6 @@ spec:
         env: {{ .Values.env }}
     spec:
       volumes:
-        - name: google-cloud-key
-          secret:
-            secretName: google-application-credentials
         {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-instance-credentials
           secret:
@@ -65,9 +62,7 @@ spec:
           {{- else}}
           image: "{{ .Values.image.devRepo }}/{{ .Chart.Name }}:{{ .Values.image.tag }}"
           {{- end}}
-          volumeMounts:
-          - name: google-cloud-key
-            mountPath: /var/secrets/google
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
@@ -129,20 +124,6 @@ spec:
               secretKeyRef:
                 name: security-credentials
                 key: security-password
-          - name: GOOGLE_CLOUD_PROJECT
-            value: "{{ .Values.gcp.project }}"
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /var/secrets/google/credentials.json
-          - name: PUBSUB_TOPIC
-            value: "{{ .Values.gcp.topic }}"
-          - name: DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE
-            value: "{{ .Values.notify.dueDeletionFirstNotificationTemplate }}"
-          - name: DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE
-            value: "{{ .Values.notify.dueDeletionSecondNotificationTemplate }}"
-          - name: DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
-            value: "{{ .Values.notify.dueDeletionThirdNotificationTemplate }}"
-          - name: SEND_EMAIL_TO_GOV_NOTIFY
-            value: "{{ .Values.sendEmailToGovNotify }}"
           - name: PARTY_URL
             {{- if .Values.dns.enabled }}
             value: "http://party.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"

@@ -2,7 +2,8 @@ from datetime import datetime
 from itertools import chain
 
 from ras_rm_auth_scheduler_service.db import setup
-from ras_rm_auth_scheduler_service.helper import logger, get_query
+from ras_rm_auth_scheduler_service.helper import get_query
+from ras_rm_auth_scheduler_service.logger import logger
 from ras_rm_auth_scheduler_service.notify_service import NotifyService
 
 

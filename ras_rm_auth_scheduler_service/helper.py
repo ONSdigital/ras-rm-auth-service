@@ -1,31 +1,3 @@
-import logging
-import os
-import sys
-
-from structlog import configure, wrap_logger
-from structlog.processors import format_exc_info, JSONRenderer, TimeStamper
-from structlog.stdlib import add_log_level, filter_by_level
-
-logger_date_format = os.getenv('LOGGING_DATE_FORMAT', "%Y-%m-%dT%H:%M%s")
-log_level = os.getenv('LOGGING_LEVEL', 20)
-
-
-def add_severity_level(self, method_name, event_dict):
-    if method_name == "warn":
-        # The stdlib has an alias
-        method_name = "warning"
-    event_dict["severity"] = method_name
-    return event_dict
-
-
-logging.basicConfig(stream=sys.stdout, level=log_level, format="%(message)s")
-configure(processors=[add_severity_level, add_log_level, filter_by_level, format_exc_info,
-                      TimeStamper(fmt="%Y-%m-%dT%H:%M%s",
-                                  utc=True, key="created_at"),
-                      JSONRenderer(indent=None)])
-
-logger = wrap_logger(logging.getLogger(__name__))
-
 
 def get_query(date_one, date_two, template_date_column):
     """
