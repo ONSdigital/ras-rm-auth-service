@@ -4,14 +4,14 @@ import requests
 from google.cloud import pubsub_v1
 import config as cfg
 
-from ras_rm_auth_scheduler_service.scheduled_jobs.helper import logger
+from ras_rm_auth_scheduler_service.helper import logger
 
 
 class NotifyService:
     def __init__(self):
-        self.due_deletion_first_notification_templates = cfg.Config.DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE
-        self.due_deletion_second_notification_templates = cfg.Config.DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE
-        self.due_deletion_third_notification_templates = cfg.Config.DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
+        self.first_notification = cfg.Config.DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE
+        self.second_notification = cfg.Config.DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE
+        self.third_notification = cfg.Config.DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
         self.topic_id = cfg.Config.PUBSUB_TOPIC
         self.project_id = cfg.Config.GOOGLE_CLOUD_PROJECT
         self.publisher = None
@@ -65,9 +65,9 @@ class NotifyService:
         self._send_message(email, template_id, {'FIRST_NAME': first_name})
 
     def _get_template_id(self, template_name):
-        templates = {'due_deletion_first_notification_templates': self.due_deletion_first_notification_templates,
-                     'due_deletion_second_notification_templates': self.due_deletion_second_notification_templates,
-                     'due_deletion_third_notification_templates': self.due_deletion_third_notification_templates, }
+        templates = {'first_notification': self.first_notification,
+                     'second_notification': self.second_notification,
+                     'third_notification': self.third_notification, }
         if template_name in templates:
             return templates[template_name]
         else:

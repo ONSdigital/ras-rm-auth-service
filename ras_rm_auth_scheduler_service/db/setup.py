@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 import config as cfg
 
-from ras_rm_auth_scheduler_service.scheduled_jobs.helper import logger as log, AuthDueDeletionSchedulerError
+from ras_rm_auth_scheduler_service.helper import logger as log, AuthDueDeletionSchedulerError
 
 
 def get_database():

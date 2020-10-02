@@ -1,6 +1,6 @@
 FROM python:3.8-slim
 
-RUN apt-get update && apt-get install -y build-essential curl gunicorn
+RUN apt-get update && apt-get install -y build-essential curl
 RUN pip install pipenv
 
 WORKDIR /app

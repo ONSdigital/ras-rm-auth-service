@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from ras_rm_auth_scheduler_service.scheduled_jobs.notify_service import NotifyService, NotifyError
+from ras_rm_auth_scheduler_service.notify_service import NotifyService, NotifyError
 
 
 class TestNotifyService(unittest.TestCase):
@@ -16,12 +16,12 @@ class TestNotifyService(unittest.TestCase):
 
     def test_a_valid_template_id(self):
         notify = NotifyService()
-        template_id = notify._get_template_id(template_name='due_deletion_first_notification_templates')
+        template_id = notify._get_template_id(template_name='first_notification')
         self.assertEqual(template_id, 'due_deletion_first_notification_templates')
 
     def test_a_successful_send_to_pub_sub(self):
         with patch(
-            'ras_rm_auth_scheduler_service.scheduled_jobs.notify_service.NotifyService._get_user_first_name'
+            'ras_rm_auth_scheduler_service.notify_service.NotifyService._get_user_first_name'
         )as mock_request:
             mock_request.return_value = "test"
             publisher = MagicMock()
@@ -29,7 +29,7 @@ class TestNotifyService(unittest.TestCase):
             notify = NotifyService()
             notify.publisher = publisher
             result = notify.request_to_notify(email='test@test.test',
-                                              template_name='due_deletion_first_notification_templates')
+                                              template_name='first_notification')
             data = b'{"notify": {"email_address": "test@test.test", ' \
                    b'"template_id": "due_deletion_first_notification_templates", "personalisation": {"FIRST_NAME": ' \
                    b'"test"}}}'
@@ -40,7 +40,7 @@ class TestNotifyService(unittest.TestCase):
 
     def test_a_unsuccessful_send_to_pub_sub(self):
         with patch(
-            'ras_rm_auth_scheduler_service.scheduled_jobs.notify_service.NotifyService._get_user_first_name'
+            'ras_rm_auth_scheduler_service.notify_service.NotifyService._get_user_first_name'
         )as mock_request:
             mock_request.return_value = "test"
             future = MagicMock()
@@ -51,11 +51,11 @@ class TestNotifyService(unittest.TestCase):
             notify.publisher = publisher
             with self.assertRaises(NotifyError):
                 notify.request_to_notify(email='test@test.test',
-                                         template_name='due_deletion_first_notification_templates')
+                                         template_name='first_notification')
 
     def test_a_unsuccessful_send_to_pub_sub_with_exception(self):
         with patch(
-            'ras_rm_auth_scheduler_service.scheduled_jobs.notify_service.NotifyService._get_user_first_name'
+            'ras_rm_auth_scheduler_service.notify_service.NotifyService._get_user_first_name'
         )as mock_request:
             mock_request.return_value = "test"
             future = MagicMock()
@@ -66,4 +66,4 @@ class TestNotifyService(unittest.TestCase):
             notify.publisher = publisher
             with self.assertRaises(NotifyError):
                 notify.request_to_notify(email='test@test.test',
-                                         template_name='due_deletion_first_notification_templates')
+                                         template_name='first_notification')
