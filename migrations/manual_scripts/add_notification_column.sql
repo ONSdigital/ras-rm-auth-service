@@ -1,4 +1,4 @@
 ALTER TABLE auth.user
-ADD due_deletion_first_notification_date TIMESTAMP without time zone,
-    due_deletion_second_notification_date TIMESTAMP without time zone,
-    due_deletion_third_notification_date TIMESTAMP without time zone;
+ADD first_notification TIMESTAMP without time zone,
+    second_notification TIMESTAMP without time zone,
+    third_notification TIMESTAMP without time zone;

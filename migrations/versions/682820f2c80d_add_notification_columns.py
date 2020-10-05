@@ -17,13 +17,13 @@ depends_on = None
 
 def upgrade():
     with op.batch_alter_table(table_name='user', schema="auth") as batch_op:
-        batch_op.add_column(sa.Column('due_deletion_first_notification_date', sa.DateTime, nullable=True))
-        batch_op.add_column(sa.Column('due_deletion_second_notification_date', sa.DateTime, nullable=True))
-        batch_op.add_column(sa.Column('due_deletion_third_notification_date', sa.DateTime, nullable=True))
+        batch_op.add_column(sa.Column('first_notification', sa.DateTime, nullable=True))
+        batch_op.add_column(sa.Column('second_notification', sa.DateTime, nullable=True))
+        batch_op.add_column(sa.Column('third_notification', sa.DateTime, nullable=True))
 
 
 def downgrade():
     with op.batch_alter_table(table_name='user', schema="auth") as batch_op:
-        batch_op.drop_column('due_deletion_first_notification_date')
-        batch_op.drop_column('due_deletion_second_notification_date')
-        batch_op.drop_column('due_deletion_third_notification_date')
+        batch_op.drop_column('first_notification')
+        batch_op.drop_column('second_notification')
+        batch_op.drop_column('third_notification')

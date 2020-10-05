@@ -70,23 +70,23 @@ class TestBatchProcessEndpoints(unittest.TestCase):
     def is_third_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.due_deletion_third_notification_date).filter(
+                user = session.query(User.third_notification).filter(
                     User.username == user_name).first()
-                return user.due_deletion_third_notification_date != None  # noqa
+                return user.third_notification != None  # noqa
 
     def is_second_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.due_deletion_second_notification_date).filter(
+                user = session.query(User.second_notification).filter(
                     User.username == user_name).first()
-                return user.due_deletion_second_notification_date != None  # noqa
+                return user.second_notification != None  # noqa
 
     def is_first_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.due_deletion_first_notification_date).filter(
+                user = session.query(User.first_notification).filter(
                     User.username == user_name).first()
-                return user.due_deletion_first_notification_date != None  # noqa
+                return user.first_notification != None  # noqa
 
     def test_batch_delete(self):
         """

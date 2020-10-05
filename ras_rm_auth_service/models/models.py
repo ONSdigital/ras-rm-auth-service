@@ -29,9 +29,9 @@ class User(Base):
     failed_logins = Column(Integer, default=0, nullable=False)
     last_login_date = Column(DateTime, default=None, nullable=True)
     account_creation_date = Column(DateTime, default=datetime.utcnow)
-    due_deletion_first_notification_date = Column(DateTime, default=None, nullable=True)
-    due_deletion_second_notification_date = Column(DateTime, default=None, nullable=True)
-    due_deletion_third_notification_date = Column(DateTime, default=None, nullable=True)
+    first_notification = Column(DateTime, default=None, nullable=True)
+    second_notification = Column(DateTime, default=None, nullable=True)
+    third_notification = Column(DateTime, default=None, nullable=True)
     mark_for_deletion = Column(Boolean, default=False)
 
     def update_user(self, update_params):
@@ -94,9 +94,9 @@ class User(Base):
         self.last_login_date = datetime.now(timezone.utc)
 
     def reset_due_deletion_dates(self):
-        self.due_deletion_first_notification_date = None
-        self.due_deletion_second_notification_date = None
-        self.due_deletion_third_notification_date = None
+        self.first_notification = None
+        self.second_notification = None
+        self.third_notification = None
 
 
 class AccountSchema(Schema):

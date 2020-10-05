@@ -8,9 +8,9 @@ from ras_rm_auth_scheduler_service.notify_service import NotifyService
 
 
 def _get_notification_column(template_name):
-    templates = {'first_notification': "due_deletion_first_notification_date",
-                 'second_notification': "due_deletion_second_notification_date",
-                 'third_notification': "due_deletion_third_notification_date"}
+    templates = {'first_notification': "first_notification",
+                 'second_notification': "second_notification",
+                 'third_notification': "third_notification"}
     if template_name in templates:
         return templates[template_name]
     else:
