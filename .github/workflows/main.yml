@@ -14,6 +14,7 @@ on:
 
 env:
   IMAGE: auth
+  SCHEDULER_IMAGE: auth-scheduler
   REGISTRY_HOSTNAME: eu.gcr.io
   HOST: ${{ secrets.GOOGLE_PROJECT_ID }}
   RELEASE_HOST: ${{ secrets.RELEASE_PROJECT_ID }}
@@ -74,10 +75,12 @@ jobs:
         if: github.ref != 'refs/heads/master'
         run: |
           docker build -t "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":${{ steps.tag.outputs.pr_number }} -f _infra/docker/Dockerfile .
+          docker build -t "$REGISTRY_HOSTNAME"/"$HOST"/"$SCHEDULER_IMAGE":${{ steps.tag.outputs.pr_number }} -f _infra/docker/scheduler.Dockerfile .
       - name: Push dev image
         if: github.ref != 'refs/heads/master'
         run: |
           docker push "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":${{ steps.tag.outputs.pr_number }}
+          docker push "$REGISTRY_HOSTNAME"/"$HOST"/"$SCHEDULER_IMAGE":${{ steps.tag.outputs.pr_number }}
       - name: template helm
         run: |
           helm template $CHART_DIRECTORY

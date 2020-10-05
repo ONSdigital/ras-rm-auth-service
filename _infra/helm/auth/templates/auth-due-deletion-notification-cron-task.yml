@@ -1,0 +1,132 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .Values.crons.dueDeletionNotificationScheduler.name }}
+spec:
+  schedule: "{{ .Values.crons.dueDeletionNotificationScheduler.cron }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: google-cloud-key
+              secret:
+                secretName: google-application-credentials
+            {{- if .Values.database.sqlProxyEnabled }}
+            - name: cloudsql-instance-credentials
+              secret:
+                secretName: cloudsql-proxy-credentials
+                defaultMode: 0444
+                items:
+                - key: "credentials.json"
+                  path: "credentials.json"
+            {{- end }}
+          containers:
+          {{- if .Values.database.sqlProxyEnabled }}
+          - name: cloudsql-proxy
+            image: gcr.io/cloudsql-docker/gce-proxy:1.16
+            command: ["/cloud_sql_proxy",
+                      "-instances=$(SQL_INSTANCE_NAME)=tcp:$(DB_PORT)",
+                      "-ip_address_types=PRIVATE",
+                      "-credential_file=/secrets/cloudsql/credentials.json"]
+            securityContext:
+              runAsUser: 2  # non-root user
+              allowPrivilegeEscalation: false
+            volumeMounts:
+              - name: cloudsql-instance-credentials
+                mountPath: /secrets/cloudsql
+                readOnly: true
+            env:
+            - name: SQL_INSTANCE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cloudsql-proxy-config
+                  key: instance-connection-name
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: db-config
+                  key: db-port
+          {{- end }}
+          - name: {{ .Values.crons.dueDeletionNotificationScheduler.image }}
+            {{- if eq .Values.image.tag "latest"}}
+            image: "{{ .Values.image.name }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Chart.AppVersion }}"
+            {{- else}}
+            image: "{{ .Values.image.devRepo }}/{{ .Values.crons.dueDeletionNotificationScheduler.image }}:{{ .Values.image.tag }}"
+            {{- end}}
+            volumeMounts:
+              - name: google-cloud-key
+                mountPath: /var/secrets/google
+            env:
+              - name: DB_HOST
+                {{- if .Values.database.managedPostgres }}
+                valueFrom:
+                  secretKeyRef:
+                    name: db-config
+                    key: db-host
+                {{- else }}
+                value: $(POSTGRES_SERVICE_HOST)
+                {{- end }}
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: db-config
+                    key: db-port
+              - name: DB_NAME
+                valueFrom:
+                  secretKeyRef:
+                    name: db-config
+                    key: {{ .Values.database.secrets.nameKey }}
+              - name: DB_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: db-credentials
+                    key: {{ .Values.database.secrets.usernameKey }}
+              - name: DB_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: db-credentials
+                    key: {{ .Values.database.secrets.passwordKey }}
+              - name: SECURITY_USER_NAME
+                valueFrom:
+                  secretKeyRef:
+                    name: security-credentials
+                    key: security-user
+              - name: SECURITY_USER_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: security-credentials
+                    key: security-password
+              - name: GOOGLE_CLOUD_PROJECT
+                value: "{{ .Values.gcp.project }}"
+              - name: GOOGLE_APPLICATION_CREDENTIALS
+                value: /var/secrets/google/credentials.json
+              - name: PUBSUB_TOPIC
+                value: "{{ .Values.gcp.topic }}"
+              - name: DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE
+                value: "{{ .Values.notify.dueDeletionFirstNotificationTemplate }}"
+              - name: DUE_DELETION_SECOND_NOTIFICATION_TEMPLATE
+                value: "{{ .Values.notify.dueDeletionSecondNotificationTemplate }}"
+              - name: DUE_DELETION_THIRD_NOTIFICATION_TEMPLATE
+                value: "{{ .Values.notify.dueDeletionThirdNotificationTemplate }}"
+              - name: SEND_EMAIL_TO_GOV_NOTIFY
+                value: "{{ .Values.sendEmailToGovNotify }}"
+              - name: PARTY_URL
+                {{- if .Values.dns.enabled }}
+                value: "http://party.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
+                {{- else }}
+                value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
+                {{- end }}
+              - name: PORT
+                value: "{{ .Values.container.port }}"
+              - name: APP_SETTINGS
+                value: "DevelopmentConfig"
+              - name: DATABASE_URI
+                {{- if .Values.database.sqlProxyEnabled }}
+                value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@127.0.0.1:$(DB_PORT)/$(DB_NAME)"
+                {{- else }}
+                value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+                {{- end }}
+              - name: LOGGING_LEVEL
+                value: "DEBUG"
+          restartPolicy: OnFailure

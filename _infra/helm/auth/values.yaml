@@ -33,8 +33,26 @@ dns:
   wellKnownPort: 8080
 
 crons:
-  markForDeletionScheduler:
-    name: auth-scheduler-delete-users
-    cron: "0 3 * * *"
-    del_target: "api/account/batch/users"
-    mark_for_del_target: "api/account/batch/users/mark-for-deletion"
+  deleteUsersScheduler:
+    name: auth-delete-users-scheduled-job
+    cron: "0 0 * * *"
+    target: "/api/batch/account/users"
+  markUsersForDeletionScheduler:
+    name: auth-mark-users-for-deletion-scheduled-job
+    cron: "0 1 * * *"
+    target: "/api/batch/account/users/mark-for-deletion"
+  dueDeletionNotificationScheduler:
+    name: auth-due-deletion-notification-scheduled-job
+    cron: "0 2 * * *"
+    image: auth-scheduler
+
+notify:
+  dueDeletionFirstNotificationTemplate: due_deletion_first_notification_templates
+  dueDeletionSecondNotificationTemplate: due_deletion_second_notification_templates
+  dueDeletionThirdNotificationTemplate: due_deletion_third_notification_templates
+
+sendEmailToGovNotify: true
+
+gcp:
+  project: ras-rm-sandbox
+  topic: ras-rm-notify-test

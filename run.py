@@ -29,9 +29,11 @@ def create_app(config=None):
     from ras_rm_auth_service.resources.info import info_view  # NOQA # pylint: disable=wrong-import-position
     from ras_rm_auth_service.resources.account import account  # NOQA # pylint: disable=wrong-import-position
     from ras_rm_auth_service.resources.tokens import tokens  # NOQA # pylint: disable=wrong-import-position
+    from ras_rm_auth_service.batch_process_endpoints import batch
     app.register_blueprint(info_view)
     app.register_blueprint(account)
     app.register_blueprint(tokens)
+    app.register_blueprint(batch)
 
     try:
         initialise_db(app)
