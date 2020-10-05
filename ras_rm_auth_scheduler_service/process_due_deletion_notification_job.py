@@ -30,7 +30,8 @@ def process_notification_job(date_one, date_two, scheduler):
                                           email=username)
         logger.info(f"Due deletion {scheduler} sent to {username}")
         logger.info(f"updating {column_name} for {username}")
-        csr.execute(f"Update auth.user set {column_name} = '{datetime.utcnow()}'")
+        csr.execute(
+            f"Update auth.user set {column_name} = '{datetime.utcnow()}' where auth.user.username = '{username}'")
         con.commit()
         logger.info(f"updated {column_name} for {username}")
     csr.close()

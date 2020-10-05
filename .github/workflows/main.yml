@@ -154,11 +154,12 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           docker build -f _infra/docker/Dockerfile -t "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ steps.release.outputs.version }} .
+          docker build -f _infra/docker/scheduler.Dockerfile -t "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$SCHEDULER_IMAGE":${{ steps.release.outputs.version }} .
       - name: Push Release image
         if: github.ref == 'refs/heads/master'
         run: |
           docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ steps.release.outputs.version }}
-
+          docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$SCHEDULER_IMAGE":${{ steps.release.outputs.version }}
       - name: Publish Charts
         if: github.ref == 'refs/heads/master'
         run: |
