@@ -62,7 +62,7 @@ class NotifyService:
                               error=e)
 
     def request_to_notify(self, template_name, email):
-        logger.info("Request to notify ", email=obfuscate_email(email), template_name=template_name)
+        logger.info("Request to notify ", template_name=template_name)
         template_id = self._get_template_id(template_name)
         first_name = self._get_user_first_name(email)
         self._send_message(email, template_id, {'FIRST_NAME': first_name})
