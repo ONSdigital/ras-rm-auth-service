@@ -26,14 +26,15 @@ def process_notification_job(date_one, date_two, scheduler):
     csr.execute(query)
     users = [x for x in chain.from_iterable(csr.fetchall()) if isinstance(x, str)]
     for username in users:
-        logger.info(f"Sending due deletion {scheduler} to {obfuscate_email(username)}")
+        obs_username = obfuscate_email(username)
+        logger.info(f"Sending due deletion {scheduler} to {obs_username}")
         NotifyService().request_to_notify(template_name=scheduler,
                                           email=username)
-        logger.info(f"Due deletion {scheduler} sent to {obfuscate_email(username)}")
-        logger.info(f"updating {column_name} for {obfuscate_email(username)}")
+        logger.info(f"Due deletion {scheduler} sent to {obs_username}")
+        logger.info(f"updating {column_name} for {obs_username}")
         csr.execute(
-            f"Update auth.user set {column_name} = '{datetime.utcnow()}' where auth.user.username = '{obfuscate_email(username)}'")
+            f"Update auth.user set {column_name} = '{datetime.utcnow()}' where auth.user.username = '{obs_username}'")
         con.commit()
-        logger.info(f"updated {column_name} for {obfuscate_email(username)}")
+        logger.info(f"updated {column_name} for {obs_username}")
     csr.close()
     con.close()
