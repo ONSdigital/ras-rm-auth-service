@@ -1,4 +1,3 @@
-
 import logging
 
 from flask import Blueprint, make_response, request, jsonify
@@ -11,7 +10,6 @@ from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User, AccountSchema
 from ras_rm_auth_service.resources.tokens import obfuscate_email
-
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -89,6 +87,60 @@ def put_account():
 
     logger.info("Successfully updated account", user_id=user.id)
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
+
+
+@account.route('/users/username', methods=['GET'])
+def get_account_by_user_name():
+    """
+    Get user data.
+    """
+    try:
+        payload = request.get_json()
+        username = payload['username']
+        with transactional_session() as session:
+            user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
+    except KeyError:
+        logger.exception("Missing request parameter")
+        return make_response(jsonify({"title": "Auth service get user error",
+                                      "detail": "Missing 'username'"}), 400)
+    except NoResultFound:
+        logger.info("User does not exist", username=obfuscate_email(username))
+        return make_response(
+            jsonify({"title": "Auth service get user error",
+                     "detail": "This user does not exist on the Auth server"}), 404)
+    return jsonify(user.to_user_dict())
+
+
+@account.route('/user', methods=['PATCH'])
+def undo_delete_account():
+    """
+    Reverts user data marked for deletion to be set to false.
+    """
+    params = request.form
+    try:
+        username = params['username']
+        logger.info("Undo delete user", username=obfuscate_email(username))
+        with transactional_session() as session:
+            user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
+            user.mark_for_deletion = False
+            session.commit()
+    except KeyError:
+        logger.exception("Missing request parameter")
+        return make_response(jsonify({"title": "Auth service undo delete user error",
+                                      "detail": "Missing 'username'"}), 400)
+    except NoResultFound:
+        logger.info("User does not exist", username=obfuscate_email(username))
+        return make_response(
+            jsonify({"title": "Auth service undo delete user error",
+                     "detail": "This user does not exist on the Auth server"}), 404)
+
+    except SQLAlchemyError:
+        logger.exception("Unable to commit undo delete operation", username=obfuscate_email(username))
+        return make_response(jsonify({"title": "Auth service undo delete user error",
+                                      "detail": "Unable to commit undo delete operation"}), 500)
+
+    logger.info("Successfully restated user", username=obfuscate_email(username))
+    return '', 204
 
 
 @account.route('/user', methods=['DELETE'])

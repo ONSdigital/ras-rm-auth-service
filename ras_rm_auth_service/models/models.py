@@ -98,6 +98,15 @@ class User(Base):
         self.second_notification = None
         self.third_notification = None
 
+    def to_user_dict(self):
+        d = {
+            'first_notification': self.first_notification,
+            'second_notification': self.second_notification,
+            'third_notification': self.third_notification,
+            'mark_for_deletion': self.mark_for_deletion
+        }
+        return d
+
 
 class AccountSchema(Schema):
     """ Account data which is required for the operation of runner itself
