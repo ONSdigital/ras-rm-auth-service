@@ -5,7 +5,6 @@ from google.cloud import pubsub_v1
 
 import config as cfg
 from ras_rm_auth_scheduler_service.logger import logger
-from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 
 class NotifyService:

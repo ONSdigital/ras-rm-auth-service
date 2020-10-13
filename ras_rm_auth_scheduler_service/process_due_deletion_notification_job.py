@@ -5,7 +5,6 @@ from ras_rm_auth_scheduler_service.db import setup
 from ras_rm_auth_scheduler_service.helper import get_query
 from ras_rm_auth_scheduler_service.logger import logger
 from ras_rm_auth_scheduler_service.notify_service import NotifyService
-from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 
 def _get_notification_column(template_name):
