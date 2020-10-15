@@ -61,6 +61,7 @@ class User(Base):
         self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
+        self.mark_for_deletion = False
 
     def set_hashed_password(self, string_password):
         logger.info("Changing password for account", user_id=id)
@@ -86,14 +87,15 @@ class User(Base):
 
         self.reset_failed_logins()
         self.update_last_login_date()
-        self.reset_due_deletion_dates()
+        self.reset_due_deletion()
 
         return True
 
     def update_last_login_date(self):
         self.last_login_date = datetime.now(timezone.utc)
 
-    def reset_due_deletion_dates(self):
+    def reset_due_deletion(self):
+        self.mark_for_deletion = False
         self.first_notification = None
         self.second_notification = None
         self.third_notification = None

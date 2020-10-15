@@ -70,7 +70,14 @@ def mark_for_deletion_accounts():
             ))
             _account_created_before_36_months.update({'mark_for_deletion': True})
             logger.info("Scheduler finished processing Accounts not accessed in last 36 months")
-
+            logger.info("Scheduler processing Account not activated for more than 80 hrs")
+            _since_80_hrs = datetime.utcnow() - timedelta(hours=80)
+            _account_not_activated_80_hrs = session.query(User).filter(and_(
+                User.account_verified == False,  # noqa
+                User.account_creation_date < _since_80_hrs
+            ))
+            _account_not_activated_80_hrs.update({'mark_for_deletion': True})
+            logger.info("Scheduler finished* processing Account not activated for more than 80 hrs")
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler mark for delete operation")
         return make_response(jsonify({"title": "Scheduler operation for mark for delete users error",
