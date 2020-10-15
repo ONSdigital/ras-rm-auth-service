@@ -1,14 +1,14 @@
 import logging
 
 from flask import Blueprint, make_response, request, jsonify
-from marshmallow import ValidationError, EXCLUDE
+from marshmallow import ValidationError, EXCLUDE, RAISE
 from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 import structlog
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
-from ras_rm_auth_service.models.models import User, AccountSchema
+from ras_rm_auth_service.models.models import User, AccountSchema, PatchAccountSchema
 from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
@@ -16,6 +16,7 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 account = Blueprint('account_view', __name__, url_prefix='/api/account')
 
 account_schema = AccountSchema(unknown=EXCLUDE)
+patch_account_schema = PatchAccountSchema(unknown=RAISE)
 
 
 @account.before_request
@@ -89,20 +90,14 @@ def put_account():
     return make_response(jsonify({"account": user.username, "updated": "success"}), 201)
 
 
-@account.route('/users/username', methods=['GET'])
-def get_account_by_user_name():
+@account.route('/user/<username>', methods=['GET'])
+def get_account_by_user_name(username):
     """
     Get user data.
     """
     try:
-        payload = request.get_json()
-        username = payload['username']
         with transactional_session() as session:
             user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
-    except KeyError:
-        logger.exception("Missing request parameter")
-        return make_response(jsonify({"title": "Auth service get user error",
-                                      "detail": "Missing 'username'"}), 400)
     except NoResultFound:
         logger.info("User does not exist", username=obfuscate_email(username))
         return make_response(
@@ -111,35 +106,37 @@ def get_account_by_user_name():
     return jsonify(user.to_user_dict())
 
 
-@account.route('/user', methods=['PATCH'])
-def undo_delete_account():
+@account.route('/user/<username>', methods=['PATCH'])
+def patch_account(username):
     """
-    Reverts user data marked for deletion to be set to false.
+    Patch endpoint for user resource.
+    Currently only marked_for_deletion attribute can be patched
+    @param: username
     """
-    params = request.form
+    logger.info("Starting patch operation on user", username=obfuscate_email(username))
+    req = request.form
     try:
-        username = params['username']
-        logger.info("Undo delete user", username=obfuscate_email(username))
+        patch_data = patch_account_schema.load(req)
+    except ValidationError as ex:
+        logger.exception("Patch data validation error", exc_info=ex)
+        return make_response(jsonify({"title": "Bad Request error in Auth service",
+                                      "detail": "Patch data validation failed"}), 400)
+    try:
         with transactional_session() as session:
             user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
-            user.mark_for_deletion = False
-            session.commit()
-    except KeyError:
-        logger.exception("Missing request parameter")
-        return make_response(jsonify({"title": "Auth service undo delete user error",
-                                      "detail": "Missing 'username'"}), 400)
+            user.patch_user(patch_data)
+
     except NoResultFound:
-        logger.info("User does not exist", username=obfuscate_email(username))
+        logger.error("User does not exist", username=obfuscate_email(username))
         return make_response(
             jsonify({"title": "Auth service undo delete user error",
                      "detail": "This user does not exist on the Auth server"}), 404)
-
     except SQLAlchemyError:
         logger.exception("Unable to commit undo delete operation", username=obfuscate_email(username))
         return make_response(jsonify({"title": "Auth service undo delete user error",
                                       "detail": "Unable to commit undo delete operation"}), 500)
 
-    logger.info("Successfully restated user", username=obfuscate_email(username))
+    logger.info("Successfully completed patch operation on user", username=obfuscate_email(username))
     return '', 204
 
 
@@ -161,7 +158,7 @@ def delete_account():
         return make_response(jsonify({"title": "Auth service delete user error",
                                       "detail": "Missing 'username'"}), 400)
     except NoResultFound:
-        logger.info("User does not exist", username=obfuscate_email(username))
+        logger.error("User does not exist", username=obfuscate_email(username))
         return make_response(
             jsonify({"title": "Auth service delete user error",
                      "detail": "This user does not exist on the Auth server"}), 404)
