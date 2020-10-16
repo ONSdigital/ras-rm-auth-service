@@ -61,6 +61,7 @@ class User(Base):
         self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
+        self.mark_for_deletion = False
 
     def set_hashed_password(self, string_password):
         logger.info("Changing password for account", user_id=id)
@@ -94,9 +95,22 @@ class User(Base):
         self.last_login_date = datetime.now(timezone.utc)
 
     def reset_due_deletion_dates(self):
+        self.mark_for_deletion = False
         self.first_notification = None
         self.second_notification = None
         self.third_notification = None
+
+    def to_user_dict(self):
+        d = {
+            'first_notification': self.first_notification,
+            'second_notification': self.second_notification,
+            'third_notification': self.third_notification,
+            'mark_for_deletion': self.mark_for_deletion
+        }
+        return d
+
+    def patch_user(self, patch_params):
+        self.mark_for_deletion = patch_params.get('mark_for_deletion', self.mark_for_deletion)
 
 
 class AccountSchema(Schema):
@@ -104,3 +118,9 @@ class AccountSchema(Schema):
     """
     username = fields.String(required=True, validate=validate.Length(min=1))
     password = fields.String(required=True, validate=validate.Length(min=1))
+
+
+class PatchAccountSchema(Schema):
+    """ Account data which is required for the operation patch
+    """
+    mark_for_deletion = fields.Boolean(required=True)

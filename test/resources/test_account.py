@@ -321,3 +321,115 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json(), {"title": "Auth service delete user error",
                                                "detail": "This user does not exist on the Auth server"})
+
+    def test_get_user_account(self):
+        """
+        Test get user end point
+
+                Given a user exists
+                When get user account
+                Then account should be retrieved
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()['mark_for_deletion'], False)
+
+    def test_user_account_that_does_not_exist(self):
+        """
+        Given no user account exist
+        When get a non-existing the account
+        Then get an error
+        """
+        # Given
+        # Verify the user doesn't exist by trying to change one that doesn't exist.
+        data = {"username": "idonotexist@example.com", "password": "password"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 401)
+
+        # When
+        response = self.client.get('/api/account/user/idonotexist@example.com',
+                                   headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.get_json(), {"title": "Auth service get user error",
+                                               "detail": "This user does not exist on the Auth server"})
+
+    def test_user_account_bad_request(self):
+        """
+        Test get user end point with bad request
+        """
+        response = self.client.get('/api/account/user/',
+                                   headers=self.headers)
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_patch_user_account(self):
+        """
+        Test undo delete user end point
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com',
+                                   headers=self.headers)
+        self.assertEqual(response.get_json()['mark_for_deletion'], True)
+        form_data_new = {"mark_for_deletion": False}
+        # Then
+        upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
+        self.assertEqual(upsert.status_code, 204)
+        new_response = self.client.get('/api/account/user/testuser@email.com',
+                                       headers=self.headers)
+        self.assertEqual(new_response.get_json()['mark_for_deletion'], False)
+
+    def test_patch_user_that_does_not_exist(self):
+        """
+        Given no user account exist
+        When patch a non-existing the account
+        Then get an error
+        """
+        # Given
+        # Verify the user doesn't exist by trying to change one that doesn't exist.
+        data = {"username": "idonotexist@example.com", "password": "password"}
+        response = self.client.put('/api/account/create', data=data, headers=self.headers)
+        self.assertEqual(response.status_code, 401)
+
+        # When
+        form_data_new = {"mark_for_deletion": False}
+        response = self.client.patch('/api/account/user/idonotexist@example.com', data=form_data_new,
+                                     headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.get_json(), {"title": "Auth service undo delete user error",
+                                               "detail": "This user does not exist on the Auth server"})
+
+    def test_patch_user_bad_request(self):
+        """
+        Test patch user end point with bad request
+        """
+        response = self.client.patch('/api/account/user/idonotexist@example.com', data={"something": "something"},
+                                     headers=self.headers)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.get_json(), {"title": "Bad Request error in Auth service",
+                                               "detail": "Patch data validation failed"})
+
+    @patch('ras_rm_auth_service.resources.account.transactional_session')
+    def test_undo_delete_user_unable_to_commit(self, session_scope_mock):
+        """
+        Test patch user end point unable to commit account
+        """
+        session_scope_mock.side_effect = SQLAlchemyError()
+        form_data = {"mark_for_deletion": False}
+
+        response = self.client.patch('/api/account/user/idonotexist@example.com', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"title": "Auth service undo delete user error",
+                                               "detail": "Unable to commit undo delete operation"})
