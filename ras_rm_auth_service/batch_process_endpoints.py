@@ -58,6 +58,8 @@ def mark_for_deletion_accounts():
     try:
         with transactional_session() as session:
             logger.info("Scheduler processing Accounts not accessed in the last 36 months ")
+            # process to mark account ready for deletion for
+            # accounts not accessed in the last 36 months
             _since_36_months = datetime.utcnow() - timedelta(days=1095)
             _last_login_before_36_months = session.query(User).filter(and_(
                 User.last_login_date != None,  # noqa
@@ -70,6 +72,8 @@ def mark_for_deletion_accounts():
             ))
             _account_created_before_36_months.update({'mark_for_deletion': True})
             logger.info("Scheduler finished processing Accounts not accessed in last 36 months")
+            # process to mark account ready for deletion for
+            # accounts not been activated in the last 80 hrs.
             logger.info("Scheduler processing Account not activated for more than 80 hrs")
             _since_80_hrs = datetime.utcnow() - timedelta(hours=80)
             _account_not_activated_80_hrs = session.query(User).filter(and_(
