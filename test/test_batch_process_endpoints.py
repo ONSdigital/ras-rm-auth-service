@@ -236,6 +236,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_2, {'last_login_date': datetime.datetime.utcnow()})
+        self.update_test_data(self.user_2, {'account_verified': True})
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
