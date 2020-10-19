@@ -1,14 +1,20 @@
 import base64
-import unittest
 import datetime
-from unittest.mock import patch
-from collections import namedtuple
+import unittest
+from unittest.mock import patch, MagicMock, PropertyMock
 from ras_rm_auth_service.models import models
 from sqlalchemy.exc import SQLAlchemyError
 
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User
-from run import create_app
+from run import create_app, app
+
+
+def mock_response():
+    mock_res = MagicMock()
+    type(mock_res).status_code = PropertyMock(return_value=207)
+    mock_res.json.return_value = "{}"
+    return mock_res
 
 
 class TestBatchProcessEndpoints(unittest.TestCase):
@@ -21,6 +27,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
     form_data_1 = {"username": user_1, "password": pwd}
     form_data_2 = {"username": user_2, "password": pwd}
     form_data_3 = {"username": user_3, "password": pwd}
+    ci_upload_url = f'{app.config["PARTY_URL"]}/party-api/v1/batch/requests'
 
     def setUp(self):
         self.app = create_app('TestingConfig')
@@ -90,7 +97,17 @@ class TestBatchProcessEndpoints(unittest.TestCase):
 
     def test_batch_delete(self):
         """
-        Test bach delete
+        Test bach delete endpoint @batch.route('/users', methods=['DELETE'])
+        Given:
+        Four user exists in the system
+        When:
+        Three of the users are marked ready for deletion &
+        Scheduler calls the batch endpoint for hard delete
+        Then:
+        Once the scheduler finishes three users who were marked for deletion
+        does not exist in the system &
+        One user who was not marked for the deletion, exist in the system
+        And a request to partysvc was made to mark the users being deleted ready for deletion
         """
         # Given:
         self.batch_setup()
@@ -104,17 +121,16 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.client.delete('/api/account/user',
                            data={"username": self.user_3},
                            headers=self.headers)
-        # Then:
-
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        fake_response = namedtuple('Response', 'status_code json')
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests') as mock_request:
-            mock_request().post.return_value = fake_response(status_code=207, json=lambda: [])
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+            mock_request.return_value = mock_response()
             batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
-            mock_request.post().assert_called_once
+            self.assertTrue(mock_request.called)
+            self.assertEqual(1, mock_request.call_count)
+        # Then:
         self.assertEqual(batch_delete_request.status_code, 204)
         self.assertTrue(self.does_user_exists(self.user_2))
         self.assertFalse(self.does_user_exists(self.user_0))
@@ -123,17 +139,24 @@ class TestBatchProcessEndpoints(unittest.TestCase):
 
     def test_batch_delete_with_out_users_marked_for_deletion(self):
         """
-        Test Batch delete
+        Test Batch delete endpoint @batch.route('/users', methods=['DELETE'])
+        Given:
+        Four user exists in the system
+        When:
+        None of the users are marked ready for deletion &
+        Scheduler calls the batch endpoint for hard delete
+        Then:
+        All four users are present in the system
         """
         # Given:
         self.batch_setup()
         # When:
-        fake_response = namedtuple('Response', 'status_code json')
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests') as mock_request:
-            mock_request().post.return_value = fake_response(status_code=207, json=lambda: [])
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+            mock_request.return_value = mock_response()
             batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
             # Then:
-            mock_request.post().assert_called_once
+            self.assertFalse(mock_request.called)
+            self.assertEqual(0, mock_request.call_count)
         self.assertEqual(batch_delete_request.status_code, 204)
         self.assertTrue(self.does_user_exists(self.user_2))
         self.assertTrue(self.does_user_exists(self.user_0))
@@ -142,6 +165,15 @@ class TestBatchProcessEndpoints(unittest.TestCase):
 
     @patch('ras_rm_auth_service.batch_process_endpoints.transactional_session')
     def test_batch_delete_users_unable_to_commit(self, session_scope_mock):
+        """
+        Test Batch delete endpoint @batch.route('/users', methods=['DELETE'])
+        Given:
+        side effect has been configured
+        When:
+        Scheduler calls the batch endpoint for hard delete
+        Then:
+        500 error is raised
+        """
         # Given:
         session_scope_mock.side_effect = SQLAlchemyError()
         form_data = {"username": "testuser@email.com"}
@@ -153,6 +185,11 @@ class TestBatchProcessEndpoints(unittest.TestCase):
                                                "detail": "Unable to perform delete operation"})
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_not_null(self):
+        """
+        Test mark for deletion endpoint @batch.route('users/mark-for-deletion', methods=['DELETE'])
+        Provided the last login date is not null and the user has not logged in for the last
+        36 months the accounts will be marked for deletion
+        """
         # Given:
         self.batch_setup()
         # When:
@@ -168,7 +205,9 @@ class TestBatchProcessEndpoints(unittest.TestCase):
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_null(self):
         """
-          Test scheduler endpoint for the account not accessed in the last 36 months
+        Test mark for deletion endpoint @batch.route('users/mark-for-deletion', methods=['DELETE'])
+        Provided the last login is null and the user account got created
+        36 months ago the accounts will be marked for deletion
         """
         # Given:
         self.batch_setup()
@@ -185,7 +224,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_present(self):
         """
-          Test scheduler endpoint for the account not accessed in the last 36 months
+        Test mark for deletion endpoint @batch.route('users/mark-for-deletion', methods=['DELETE'])
+        Provided the last login date is present and the user account creation is present
+        users has not logged in for the last
+        36 months the accounts will be marked for deletion
         """
         # Given:
         self.batch_setup()
@@ -194,9 +236,75 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_2, {'last_login_date': datetime.datetime.utcnow()})
+        self.update_test_data(self.user_2, {'account_verified': True})
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
+
+    def test_batch_delete_users_mark_for_deletion_for_not_verified_account(self):
+        """
+        Test mark for deletion endpoint @batch.route('users/mark-for-deletion', methods=['DELETE'])
+        Provided the account has been created 80 hrs ago but the account is not verified, the account
+        will be marked for deletion to be picked up for hard delete
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        # Then:
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
+
+    def test_batch_delete_users_mark_for_deletion_for_verified_account(self):
+        """
+        Test mark for deletion endpoint @batch.route('users/mark-for-deletion', methods=['DELETE'])
+        Provided the account has been created 80 hrs ago but the account is verified, the account
+        will not be marked for deletion to be picked up for hard delete
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        criteria = {'account_verified': True}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        # Then:
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_0))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
+
+    def test_account_marked_for_deletion_resets_when_user_login(self):
+        """
+        Provided the accounts has been marked for deletion, when the user login
+        the mark_for_deletion should reset
+        """
+        # Given:
+        self.batch_setup()
+        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
+        # When:
+        form_data = {"username": self.user_0, "account_verified": "true"}
+        self.client.put('/api/account/create', data=form_data, headers=self.headers)
+        # Then:
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_0))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
