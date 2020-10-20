@@ -4,6 +4,7 @@ metadata:
   name: {{ .Values.crons.dueDeletionNotificationScheduler.name }}
 spec:
   schedule: "{{ .Values.crons.dueDeletionNotificationScheduler.cron }}"
+  concurrencyPolicy: Replace
   jobTemplate:
     spec:
       template:
