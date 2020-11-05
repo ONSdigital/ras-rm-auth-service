@@ -63,7 +63,7 @@ spec:
                 {{- else }}
                 value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
                 {{- end }}
-              - name: PARTY_URL
+              - name: AUTH_URL
                 {{- if .Values.dns.enabled }}
                 value: "http://auth.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
                 {{- else }}
