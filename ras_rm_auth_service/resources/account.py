@@ -110,7 +110,8 @@ def get_account_by_user_name(username):
 def patch_account(username):
     """
     Patch endpoint for user resource.
-    Currently only marked_for_deletion attribute can be patched
+    Currently only marked_for_deletion, first_notification, second_notification and third_notification
+     attribute can be patched
     @param: username
     """
     logger.info("Starting patch operation on user", username=obfuscate_email(username))

@@ -8,8 +8,8 @@ class Config(object):
     DATABASE_SCHEMA = 'auth'
     PORT = os.getenv('PORT', 8041)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
-    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
-    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
     DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/ras")
     PARTY_URL = os.getenv('PARTY_URL')
     AUTH_URL = os.getenv('AUTH_URL', 'http://localhost:8041')
