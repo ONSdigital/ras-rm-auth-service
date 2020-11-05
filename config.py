@@ -10,7 +10,7 @@ class Config(object):
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
-    DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/ras")
+    DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/postgres")
     PARTY_URL = os.getenv('PARTY_URL')
     AUTH_URL = os.getenv('AUTH_URL', 'http://localhost:8041')
     BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
