@@ -8,10 +8,11 @@ class Config(object):
     DATABASE_SCHEMA = 'auth'
     PORT = os.getenv('PORT', 8041)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
-    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME')
-    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
-    DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/postgres")
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
+    DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/ras")
     PARTY_URL = os.getenv('PARTY_URL')
+    AUTH_URL = os.getenv('AUTH_URL', 'http://localhost:8041')
     BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
     DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE = os.getenv('DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE',
                                                          'due_deletion_first_notification_templates')
@@ -38,3 +39,4 @@ class TestingConfig(Config):
     SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres")
     BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
+    AUTH_URL = os.getenv('AUTH_URL', 'http://localhost:8041')

@@ -1,14 +1,16 @@
 import logging
 import base64
 import json
+from itertools import chain
 
 import requests
 import structlog
 from flask import Blueprint, make_response, jsonify
 from datetime import datetime, timedelta
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from flask import current_app as app
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
 
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
@@ -47,6 +49,78 @@ def delete_accounts():
         return make_response(jsonify({"title": "Scheduler operation for delete users error",
                                       "detail": "Unable to perform delete operation"}), 500)
     return '', 204
+
+
+@batch.route('users/eligible-for-first-notification', methods=['GET'])
+def get_users_eligible_for_first_notification():
+    _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
+    _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+    try:
+        with transactional_session() as session:
+            logger.info("Getting users eligible for fist due deletion notification")
+            users_eligible_for_first_notification = session.query(User.username).filter(or_(and_(
+                User.last_login_date != None,  # noqa
+                User.last_login_date.between(_datetime_30_months_ago, _datetime_24_months_ago),
+                User.first_notification == None  # noqa
+            ), and_(
+                User.last_login_date == None,  # noqa
+                User.account_creation_date.between(_datetime_30_months_ago, _datetime_24_months_ago),
+                User.first_notification == None  # noqa
+            )))
+            logger.info("Found users eligible for first due deletion notification")
+            return jsonify([x for x in chain.from_iterable(users_eligible_for_first_notification)
+                            if isinstance(x, str)])
+    except NoResultFound:
+        logger.info("No existing user eligible for first due deletion notification")
+        return '', 200
+
+
+@batch.route('users/eligible-for-second-notification', methods=['GET'])
+def get_users_eligible_for_second_notification():
+    _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+    _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
+    try:
+        with transactional_session() as session:
+            logger.info("Getting users eligible for second due deletion notification")
+            users_eligible_for_second_notification = session.query(User.username).filter(or_(and_(
+                User.last_login_date != None,  # noqa
+                User.last_login_date.between(_datetime_35_months_ago, _datetime_30_months_ago),
+                User.second_notification == None  # noqa
+            ), and_(
+                User.last_login_date == None,  # noqa
+                User.account_creation_date.between(_datetime_35_months_ago, _datetime_30_months_ago),
+                User.second_notification == None  # noqa
+            )))
+            logger.info("Found users eligible for second due deletion notification")
+            return jsonify([x for x in chain.from_iterable(users_eligible_for_second_notification)
+                            if isinstance(x, str)])
+    except NoResultFound:
+        logger.info("No existing user eligible for second due deletion notification")
+        return '', 200
+
+
+@batch.route('users/eligible-for-third-notification', methods=['GET'])
+def get_users_eligible_for_third_notification():
+    _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
+    _datetime_36_months_ago = datetime.utcnow() - timedelta(days=1095)
+    try:
+        with transactional_session() as session:
+            logger.info("Getting users eligible for third due deletion notification")
+            users_eligible_for_second_notification = session.query(User.username).filter(or_(and_(
+                User.last_login_date != None,  # noqa
+                User.last_login_date.between(_datetime_36_months_ago, _datetime_35_months_ago),
+                User.third_notification == None # noqa
+            ), and_(
+                User.last_login_date == None,  # noqa
+                User.account_creation_date.between(_datetime_36_months_ago, _datetime_35_months_ago),
+                User.third_notification == None  # noqa
+            )))
+            logger.info("Found users eligible for third due deletion notification")
+            return jsonify([x for x in chain.from_iterable(users_eligible_for_second_notification)
+                            if isinstance(x, str)])
+    except NoResultFound:
+        logger.info("No existing user eligible for third due deletion notification")
+        return '', 200
 
 
 @batch.route('users/mark-for-deletion', methods=['DELETE'])

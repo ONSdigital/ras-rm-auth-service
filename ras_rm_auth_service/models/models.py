@@ -113,6 +113,9 @@ class User(Base):
 
     def patch_user(self, patch_params):
         self.mark_for_deletion = patch_params.get('mark_for_deletion', self.mark_for_deletion)
+        self.first_notification = patch_params.get('first_notification', self.first_notification)
+        self.second_notification = patch_params.get('second_notification', self.second_notification)
+        self.third_notification = patch_params.get('third_notification', self.third_notification)
 
 
 class AccountSchema(Schema):
@@ -125,4 +128,7 @@ class AccountSchema(Schema):
 class PatchAccountSchema(Schema):
     """ Account data which is required for the operation patch
     """
-    mark_for_deletion = fields.Boolean(required=True)
+    mark_for_deletion = fields.Boolean(required=False)
+    first_notification = fields.DateTime(required=False)
+    second_notification = fields.DateTime(required=False)
+    third_notification = fields.DateTime(required=False)
