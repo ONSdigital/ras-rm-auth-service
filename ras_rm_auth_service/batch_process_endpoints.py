@@ -72,7 +72,7 @@ def get_users_eligible_for_first_notification():
                             if isinstance(x, str)])
     except NoResultFound:
         logger.info("No existing user eligible for first due deletion notification")
-        return {}, 400
+        return {}, 404
 
 
 @batch.route('users/eligible-for-second-notification', methods=['GET'])
@@ -96,7 +96,7 @@ def get_users_eligible_for_second_notification():
                             if isinstance(x, str)])
     except NoResultFound:
         logger.info("No existing user eligible for second due deletion notification")
-        return {}, 400
+        return {}, 404
 
 
 @batch.route('users/eligible-for-third-notification', methods=['GET'])
@@ -120,7 +120,7 @@ def get_users_eligible_for_third_notification():
                             if isinstance(x, str)])
     except NoResultFound:
         logger.info("No existing user eligible for third due deletion notification")
-        return {}, 400
+        return {}, 404
 
 
 @batch.route('users/mark-for-deletion', methods=['DELETE'])
