@@ -1,5 +1,6 @@
 import base64
 import unittest
+from datetime import datetime
 from unittest.mock import patch
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -433,3 +434,63 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.get_json(), {"title": "Auth service undo delete user error",
                                                "detail": "Unable to commit undo delete operation"})
+
+    def test_patch_user_account_first_notification(self):
+        """
+        Test update first_notification
+        """
+        time = datetime.utcnow()
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com',
+                                   headers=self.headers)
+        self.assertEqual(response.get_json()['first_notification'], None)
+        form_data_new = {"first_notification": time}
+        # Then
+        upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
+        self.assertEqual(upsert.status_code, 204)
+        new_response = self.client.get('/api/account/user/testuser@email.com',
+                                       headers=self.headers)
+        self.assertIsNot(None, new_response.get_json()['first_notification'])
+
+    def test_patch_user_account_second_notification(self):
+        """
+        Test update first_notification
+        """
+        time = datetime.utcnow()
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com',
+                                   headers=self.headers)
+        self.assertEqual(response.get_json()['first_notification'], None)
+        form_data_new = {"second_notification": time}
+        # Then
+        upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
+        self.assertEqual(upsert.status_code, 204)
+        new_response = self.client.get('/api/account/user/testuser@email.com',
+                                       headers=self.headers)
+        self.assertIsNot(None, new_response.get_json()['second_notification'])
+
+    def test_patch_user_account_third_notification(self):
+        """
+        Test update first_notification
+        """
+        time = datetime.utcnow()
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com',
+                                   headers=self.headers)
+        self.assertEqual(response.get_json()['first_notification'], None)
+        form_data_new = {"third_notification": time}
+        # Then
+        upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
+        self.assertEqual(upsert.status_code, 204)
+        new_response = self.client.get('/api/account/user/testuser@email.com',
+                                       headers=self.headers)
+        self.assertIsNot(None, new_response.get_json()['third_notification'])

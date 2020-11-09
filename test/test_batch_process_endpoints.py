@@ -1,6 +1,6 @@
 import base64
-import datetime
 import unittest
+from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock, PropertyMock
 from ras_rm_auth_service.models import models
 from sqlalchemy.exc import SQLAlchemyError
@@ -193,7 +193,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'last_login_date': datetime.datetime(1999, 1, 1, 0, 0)}
+        criteria = {'last_login_date': datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
@@ -212,7 +212,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.datetime(1999, 1, 1, 0, 0)}
+        criteria = {'account_creation_date': datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
@@ -232,10 +232,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.datetime(1999, 1, 1, 0, 0)}
+        criteria = {'account_creation_date': datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.update_test_data(self.user_2, {'last_login_date': datetime.datetime.utcnow()})
+        self.update_test_data(self.user_2, {'last_login_date': datetime.utcnow()})
         self.update_test_data(self.user_2, {'account_verified': True})
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
         # Then:
@@ -253,7 +253,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
@@ -272,7 +272,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         criteria = {'account_verified': True}
@@ -292,7 +292,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         """
         # Given:
         self.batch_setup()
-        criteria = {'account_creation_date': datetime.datetime.utcnow() - datetime.timedelta(hours=80)}
+        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
@@ -308,3 +308,273 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
+
+    def test_get_users_eligible_for_fist_notification_with_last_login_not_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible_for_fist_notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
+        criteria = {'last_login_date': _datetime_24_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_fist_notification_with_last_login_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible_for_fist_notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
+        criteria_one = {'account_creation_date': _datetime_24_months_ago}
+        criteria = {'last_login_date': None}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_0, criteria_one)
+        self.update_test_data(self.user_2, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_fist_notification(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible_for_fist_notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=750)
+        criteria = {'last_login_date': _datetime_24_months_ago}
+        criteria_one = {'account_creation_date': _datetime_24_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_1, criteria_one)
+        self.update_test_data(self.user_3, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(4, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertIn(self.user_1, users)
+        self.assertIn(self.user_3, users)
+
+    def test_get_users_eligible_for_fist_notification_with_no_result(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible_for_fist_notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(0, len(users))
+        self.assertNotIn(self.user_0, users)
+        self.assertNotIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_second_notification_with_last_login_not_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-second-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+        criteria = {'last_login_date': _datetime_30_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_second_notification_with_last_login_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-second-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+        criteria_one = {'account_creation_date': _datetime_30_months_ago}
+        criteria = {'last_login_date': None}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_0, criteria_one)
+        self.update_test_data(self.user_2, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_second_notification(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-second-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=1064)
+        criteria = {'last_login_date': _datetime_30_months_ago}
+        criteria_one = {'account_creation_date': _datetime_30_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_1, criteria_one)
+        self.update_test_data(self.user_3, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(4, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertIn(self.user_1, users)
+        self.assertIn(self.user_3, users)
+
+    def test_get_users_eligible_for_second_notification_with_no_result(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-second-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(0, len(users))
+        self.assertNotIn(self.user_0, users)
+        self.assertNotIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_third_notification_with_last_login_not_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-third-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
+        criteria = {'last_login_date': _datetime_35_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_third_notification_with_last_login_null(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-third-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
+        criteria_one = {'account_creation_date': _datetime_35_months_ago}
+        criteria = {'last_login_date': None}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_0, criteria_one)
+        self.update_test_data(self.user_2, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(2, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
+
+    def test_get_users_eligible_for_third_notification(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-third-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
+        criteria = {'last_login_date': _datetime_35_months_ago}
+        criteria_one = {'account_creation_date': _datetime_35_months_ago}
+        self.update_test_data(self.user_0, criteria)
+        self.update_test_data(self.user_2, criteria)
+        self.update_test_data(self.user_1, criteria_one)
+        self.update_test_data(self.user_3, criteria_one)
+        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(4, len(users))
+        self.assertIn(self.user_0, users)
+        self.assertIn(self.user_2, users)
+        self.assertIn(self.user_1, users)
+        self.assertIn(self.user_3, users)
+
+    def test_get_users_eligible_for_third_notification_with_no_result(self):
+        """
+        Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-third-notification',
+        methods=['GET'])
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        # Then:
+        self.assertTrue(200, response.status_code)
+        users = response.get_json()
+        self.assertEqual(0, len(users))
+        self.assertNotIn(self.user_0, users)
+        self.assertNotIn(self.user_2, users)
+        self.assertNotIn(self.user_1, users)
+        self.assertNotIn(self.user_3, users)
