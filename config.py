@@ -12,7 +12,7 @@ class Config(object):
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD')
     DATABASE_URI = os.getenv('DATABASE_URI', "postgresql://postgres:postgres@localhost:5432/postgres")
     PARTY_URL = os.getenv('PARTY_URL')
-    AUTH_URL = os.getenv('AUTH_URL', 'http://localhost:8041')
+    AUTH_URL = os.getenv('AUTH_URL')
     BASIC_AUTH = (SECURITY_USER_NAME, SECURITY_USER_PASSWORD)
     DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE = os.getenv('DUE_DELETION_FIRST_NOTIFICATION_TEMPLATE',
                                                          'due_deletion_first_notification_templates')
