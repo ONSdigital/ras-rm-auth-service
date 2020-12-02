@@ -1,10 +1,5 @@
 env: minikube
 
-replicas: 1
-rollingUpdate:
-  maxSurge: 1
-  maxUnavailable: 1
-
 image:
   devRepo: eu.gcr.io/ons-rasrmbs-management
   name: eu.gcr.io/ons-rasrmbs-management
@@ -26,7 +21,21 @@ service:
 
 resources:
   requests:
-    memory: "256Mi"
+    memory: "200Mi"
+    cpu: "10m"
+  limits:
+    memory: "500Mi"
+    cpu: "50m"
+
+autoscaling: false
+scaleAt:
+  # These are expressed as a percentage of resources.requests, not resources.limits
+  memoryPercentage: 125
+  cpuPercentage: 250
+replicas: 1
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 1
 
 dns:
   enabled: false
