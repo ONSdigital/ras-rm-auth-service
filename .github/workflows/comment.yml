@@ -5,7 +5,7 @@ on:
     types: [created]
 
 env:
-  SERVICE: action
+  SERVICE: auth
 
 jobs:
   comment:
