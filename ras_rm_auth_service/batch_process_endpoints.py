@@ -1,6 +1,5 @@
 import logging
 import base64
-import json
 from itertools import chain
 
 import requests

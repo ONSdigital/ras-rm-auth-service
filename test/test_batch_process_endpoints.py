@@ -4,8 +4,6 @@ from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock, PropertyMock
 
 import requests
-from requests.cookies import MockResponse
-from werkzeug.exceptions import NotFound
 
 from ras_rm_auth_service.models import models
 from sqlalchemy.exc import SQLAlchemyError
