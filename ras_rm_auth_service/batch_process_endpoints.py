@@ -1,6 +1,5 @@
 import logging
 import base64
-import json
 from itertools import chain
 
 import requests
@@ -38,8 +37,7 @@ def delete_accounts():
             marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
             if marked_for_deletion_users.count() > 0:
                 logger.info("sending request to party service to remove ")
-                delete_party_respondents(marked_for_deletion_users)
-                marked_for_deletion_users.delete()
+                delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
                 logger.info("Scheduler successfully deleted users marked for deletion")
             else:
                 logger.info("No user marked for deletion at this time. Nothing to delete.")
@@ -179,21 +177,22 @@ def create_request(method, path, body, headers):
             "headers": headers}
 
 
-def delete_party_respondents(users):
-    batch_url = f'{app.config["PARTY_URL"]}/party-api/v1/batch/requests'
-    payload = []
+def delete_party_respondents_and_auth_user(users, session):
+    url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/email'
+
     for user in users:
-        payload.append(
-            create_request("DELETE", "/party-api/v1/respondents/email", {'email': user.username},
-                           auth_headers()), )
-
-    try:
-        response = requests.post(batch_url, auth=app.config['BASIC_AUTH'], data=json.dumps(payload))
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as error:
-        logger.exception("Unable to send request to party service for user deletion. Can't proceed with user deletion.",
-                         error=error)
-        raise error
-
-    logger.info('Successfully sent request to party service for user deletion', status_code=response.status_code,
-                response_json=response.json())
+        try:
+            response = requests.post(url, auth=app.config['BASIC_AUTH'], data={'email': user.username})
+            response.raise_for_status()
+            logger.info('Successfully sent request to party service for user deletion',
+                        status_code=response.status_code,
+                        response_json=response.json())
+            session.delete(user)
+            logger.info('Successfully deleted user account')
+        except requests.exceptions.HTTPError as error:
+            if error.response.status_code == 404:
+                logger.warn('Respondent does not exists in party service')
+                session.delete(user)
+            else:
+                logger.exception("Unable to send request to party service for user deletion. Can't proceed with user "
+                                 "deletion.", error=error)
