@@ -2,6 +2,11 @@ import base64
 import unittest
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock, PropertyMock
+
+import requests
+from requests.cookies import MockResponse
+from werkzeug.exceptions import NotFound
+
 from ras_rm_auth_service.models import models
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -129,7 +134,95 @@ class TestBatchProcessEndpoints(unittest.TestCase):
             mock_request.return_value = mock_response()
             batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
             self.assertTrue(mock_request.called)
-            self.assertEqual(1, mock_request.call_count)
+            self.assertEqual(3, mock_request.call_count)
+        # Then:
+        self.assertEqual(batch_delete_request.status_code, 204)
+        self.assertTrue(self.does_user_exists(self.user_2))
+        self.assertFalse(self.does_user_exists(self.user_0))
+        self.assertFalse(self.does_user_exists(self.user_1))
+        self.assertFalse(self.does_user_exists(self.user_3))
+
+    def test_batch_delete_when_party_throws_500(self):
+        """
+        Test bach delete endpoint @batch.route('/users', methods=['DELETE'])
+        Given:
+        Four user exists in the system
+        When:
+        Three of the users are marked ready for deletion &
+        Scheduler calls the batch endpoint for hard delete
+        Then:
+        Once the scheduler finishes three users who were marked for deletion
+        does not exist in the system &
+        One user who was not marked for the deletion, exist in the system
+        And a request to partysvc was made to mark the users being deleted ready for deletion
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_0},
+                           headers=self.headers)
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_1},
+                           headers=self.headers)
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_3},
+                           headers=self.headers)
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+            mock_resp = requests.models.Response()
+            mock_resp.status_code = 500
+            mock_request.return_value = mock_resp
+            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            self.assertTrue(mock_request.called)
+            self.assertEqual(3, mock_request.call_count)
+        # Then:
+        self.assertEqual(batch_delete_request.status_code, 204)
+        self.assertTrue(self.does_user_exists(self.user_2))
+        self.assertTrue(self.does_user_exists(self.user_0))
+        self.assertTrue(self.does_user_exists(self.user_1))
+        self.assertTrue(self.does_user_exists(self.user_3))
+
+    def test_batch_delete_when_party_throws_404(self):
+        """
+        Test bach delete endpoint @batch.route('/users', methods=['DELETE'])
+        Given:
+        Four user exists in the system
+        When:
+        Three of the users are marked ready for deletion &
+        Scheduler calls the batch endpoint for hard delete
+        Then:
+        Once the scheduler finishes three users who were marked for deletion
+        does not exist in the system &
+        One user who was not marked for the deletion, exist in the system
+        And a request to partysvc was made to mark the users being deleted ready for deletion
+        """
+        # Given:
+        self.batch_setup()
+        # When:
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_0},
+                           headers=self.headers)
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_1},
+                           headers=self.headers)
+        self.client.delete('/api/account/user',
+                           data={"username": self.user_3},
+                           headers=self.headers)
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
+        self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
+        self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+            mock_resp = requests.models.Response()
+            mock_resp.status_code = 404
+            mock_request.return_value = mock_resp
+            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            self.assertTrue(mock_request.called)
+            self.assertEqual(3, mock_request.call_count)
         # Then:
         self.assertEqual(batch_delete_request.status_code, 204)
         self.assertTrue(self.does_user_exists(self.user_2))
