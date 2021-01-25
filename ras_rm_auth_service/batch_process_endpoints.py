@@ -178,11 +178,10 @@ def create_request(method, path, body, headers):
 
 
 def delete_party_respondents_and_auth_user(users, session):
-    url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/email'
-
     for user in users:
         try:
-            response = requests.post(url, auth=app.config['BASIC_AUTH'], data={'email': user.username})
+            url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
+            response = requests.delete(url, auth=app.config['BASIC_AUTH'])
             response.raise_for_status()
             logger.info('Successfully sent request to party service for user deletion',
                         status_code=response.status_code,

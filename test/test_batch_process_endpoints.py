@@ -128,7 +128,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
             mock_request.return_value = mock_response()
             batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
             self.assertTrue(mock_request.called)
@@ -170,7 +170,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
             mock_resp = requests.models.Response()
             mock_resp.status_code = 500
             mock_request.return_value = mock_resp
@@ -214,7 +214,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
             mock_resp = requests.models.Response()
             mock_resp.status_code = 404
             mock_request.return_value = mock_resp
