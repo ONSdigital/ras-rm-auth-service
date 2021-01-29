@@ -146,7 +146,5 @@ spec:
             {{- else }}
             value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
             {{- end }}
-          - name: LOGGING_LEVEL
-            value: "DEBUG"
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}
