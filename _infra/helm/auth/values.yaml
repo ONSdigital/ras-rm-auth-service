@@ -74,3 +74,5 @@ sendEmailToGovNotify: true
 gcp:
   project: ras-rm-sandbox
   topic: ras-rm-notify-test
+
+developmentConfig: true
