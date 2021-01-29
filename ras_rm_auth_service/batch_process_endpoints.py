@@ -35,12 +35,12 @@ def delete_accounts():
         logger.info("Scheduler deleting users marked for deletion")
         with transactional_session() as session:
             marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
-            if marked_for_deletion_users.count() > 0:
-                logger.info("sending request to party service to remove ")
-                delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
-                logger.info("Scheduler successfully deleted users marked for deletion")
-            else:
-                logger.info("No user marked for deletion at this time. Nothing to delete.")
+        if marked_for_deletion_users.count() > 0:
+            logger.info("sending request to party service to remove ")
+            delete_party_respondents_and_auth_user(marked_for_deletion_users)
+            logger.info("Scheduler successfully deleted users marked for deletion")
+        else:
+            logger.info("No user marked for deletion at this time. Nothing to delete.")
 
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler delete operation")
@@ -177,21 +177,24 @@ def create_request(method, path, body, headers):
             "headers": headers}
 
 
-def delete_party_respondents_and_auth_user(users, session):
+def delete_party_respondents_and_auth_user(users):
     for user in users:
-        try:
-            url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
-            response = requests.delete(url, auth=app.config['BASIC_AUTH'])
-            response.raise_for_status()
-            logger.info('Successfully sent request to party service for user deletion',
-                        status_code=response.status_code,
-                        response_json=response.json())
-            session.delete(user)
-            logger.info('Successfully deleted user account')
-        except requests.exceptions.HTTPError as error:
-            if error.response.status_code == 404:
-                logger.warn('Respondent does not exists in party service')
+        with transactional_session() as session:
+            try:
+                url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
+                response = requests.delete(url, auth=app.config['BASIC_AUTH'])
+                response.raise_for_status()
+                logger.info('Successfully sent request to party service for user deletion',
+                            status_code=response.status_code,
+                            response_json=response.json())
                 session.delete(user)
-            else:
-                logger.exception("Unable to send request to party service for user deletion. Can't proceed with user "
-                                 "deletion.", error=error)
+                logger.info('Successfully deleted user account')
+            except requests.exceptions.HTTPError as error:
+                if error.response.status_code == 404:
+                    logger.warn('Respondent does not exists in party service')
+                    session.delete(user)
+                else:
+                    logger.exception("Unable to send request to party service for user deletion. " +
+                                     "Can't proceed with user deletion.", error=error)
+            except Exception:
+                logger.exception("Unexpected error can't proceed with user deletion.")
