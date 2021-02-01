@@ -14,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -182,9 +183,12 @@ def delete_party_respondents_and_auth_user(users, session):
         try:
             url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
             response = requests.delete(url, auth=app.config['BASIC_AUTH'])
-            logger.info('Successfully sent request to party service for user deletion',
-                        status_code=response.status_code)
             if response.status_code != 500:
+                logger.info('Successfully sent request to party service for user deletion',
+                            status_code=response.status_code)
                 session.delete(user)
+                logger.info('user successfully deleted', email=obfuscate_email(user.username))
+            else:
+                logger.error("party returned error can't proceed with user deletion", status_code=response.status_code)
         except (SQLAlchemyError, Exception):
             logger.exception("Unexpected error can't proceed with user deletion.")
