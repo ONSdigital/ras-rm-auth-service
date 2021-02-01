@@ -14,6 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import User
+from ras_rm_auth_service.resources.tokens import obfuscate_email
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -35,12 +36,12 @@ def delete_accounts():
         logger.info("Scheduler deleting users marked for deletion")
         with transactional_session() as session:
             marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
-        if marked_for_deletion_users.count() > 0:
-            logger.info("sending request to party service to remove ")
-            delete_party_respondents_and_auth_user(marked_for_deletion_users)
-            logger.info("Scheduler successfully deleted users marked for deletion")
-        else:
-            logger.info("No user marked for deletion at this time. Nothing to delete.")
+            if marked_for_deletion_users.count() > 0:
+                logger.info("sending request to party service to remove ")
+                delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
+                logger.info("Scheduler successfully deleted users marked for deletion")
+            else:
+                logger.info("No user marked for deletion at this time. Nothing to delete.")
 
     except SQLAlchemyError:
         logger.exception("Unable to perform scheduler delete operation")
@@ -107,7 +108,7 @@ def get_users_eligible_for_third_notification():
             users_eligible_for_second_notification = session.query(User.username).filter(or_(and_(
                 User.last_login_date != None,  # noqa
                 User.last_login_date.between(_datetime_36_months_ago, _datetime_35_months_ago),
-                User.third_notification == None # noqa
+                User.third_notification == None  # noqa
             ), and_(
                 User.last_login_date == None,  # noqa
                 User.account_creation_date.between(_datetime_36_months_ago, _datetime_35_months_ago),
@@ -177,24 +178,17 @@ def create_request(method, path, body, headers):
             "headers": headers}
 
 
-def delete_party_respondents_and_auth_user(users):
+def delete_party_respondents_and_auth_user(users, session):
     for user in users:
-        with transactional_session() as session:
-            try:
-                url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
-                response = requests.delete(url, auth=app.config['BASIC_AUTH'])
-                response.raise_for_status()
+        try:
+            url = f'{app.config["PARTY_URL"]}/party-api/v1/respondents/{user.username}'
+            response = requests.delete(url, auth=app.config['BASIC_AUTH'])
+            if response.status_code != 500:
                 logger.info('Successfully sent request to party service for user deletion',
-                            status_code=response.status_code,
-                            response_json=response.json())
+                            status_code=response.status_code)
                 session.delete(user)
-                logger.info('Successfully deleted user account')
-            except requests.exceptions.HTTPError as error:
-                if error.response.status_code == 404:
-                    logger.warn('Respondent does not exists in party service')
-                    session.delete(user)
-                else:
-                    logger.exception("Unable to send request to party service for user deletion. " +
-                                     "Can't proceed with user deletion.", error=error)
-            except Exception:
-                logger.exception("Unexpected error can't proceed with user deletion.")
+                logger.info('user successfully deleted', email=obfuscate_email(user.username))
+            else:
+                logger.error("party returned error can't proceed with user deletion", status_code=response.status_code)
+        except (SQLAlchemyError, Exception):
+            logger.exception("Unexpected error can't proceed with user deletion.")
