@@ -15,7 +15,7 @@
   "version": "0.1.0",
   "origin": "git@github.com:ONSdigital/ras-rm-auth-service.git",
   "commit": "dc1759cc644db1b279cb5d3ab21c29a83d33f203",
-  "branch": "master",
+  "branch": "main",
   "built": "2018-07-04T13:18:28Z"
 }
 ```
