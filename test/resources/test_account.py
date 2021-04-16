@@ -261,6 +261,23 @@ class TestAccount(unittest.TestCase):
         response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 204)
 
+    def test_delete_user_force_delete(self):
+        """
+        Test delete user end point
+
+                Given a locked user exists
+                When I unlock account
+                Then account should be deleted and verified
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        # When
+        form_data = {"username": "testuser@email.com", "force_delete": True}
+
+        response = self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 204)
+
     def test_delete_user_case_insensitive(self):
         """
         Test delete user end point
@@ -382,6 +399,26 @@ class TestAccount(unittest.TestCase):
                                    headers=self.headers)
         self.assertEqual(response.get_json()['mark_for_deletion'], True)
         form_data_new = {"mark_for_deletion": False}
+        # Then
+        upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
+        self.assertEqual(upsert.status_code, 204)
+        new_response = self.client.get('/api/account/user/testuser@email.com',
+                                       headers=self.headers)
+        self.assertEqual(new_response.get_json()['mark_for_deletion'], False)
+
+    def test_patch_user_account_force_delete(self):
+        """
+        Test undo delete user end point
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password", "force_delete": True}
+        self.client.post('/api/account/create', data=form_data, headers=self.headers)
+        self.client.delete('/api/account/user', data=form_data, headers=self.headers)
+        # When
+        response = self.client.get('/api/account/user/testuser@email.com',
+                                   headers=self.headers)
+        self.assertEqual(response.get_json()['mark_for_deletion'], True)
+        form_data_new = {"mark_for_deletion": False, "force_delete": False}
         # Then
         upsert = self.client.patch('/api/account/user/testuser@email.com', data=form_data_new, headers=self.headers)
         self.assertEqual(upsert.status_code, 204)
