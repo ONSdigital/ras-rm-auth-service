@@ -33,13 +33,14 @@ class User(Base):
     second_notification = Column(DateTime, default=None, nullable=True)
     third_notification = Column(DateTime, default=None, nullable=True)
     mark_for_deletion = Column(Boolean, default=False)
+    force_delete = Column(Boolean, default=False)
 
     def update_user(self, update_params):
         self.username = update_params.get('new_username', self.username)
 
         if 'account_verified' in update_params:
             self.account_verified = strtobool(update_params['account_verified'])
-            if self.mark_for_deletion:
+            if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 
         if 'password' in update_params:
@@ -63,7 +64,8 @@ class User(Base):
         self.reset_failed_logins()
         self.account_locked = False
         self.account_verified = True
-        self.mark_for_deletion = False
+        if not self.force_delete:
+            self.mark_for_deletion = False
 
     def set_hashed_password(self, string_password):
         logger.info("Changing password for account", user_id=id)
@@ -97,7 +99,8 @@ class User(Base):
         self.last_login_date = datetime.now(timezone.utc)
 
     def reset_due_deletion(self):
-        self.mark_for_deletion = False
+        if not self.force_delete:
+            self.mark_for_deletion = False
         self.first_notification = None
         self.second_notification = None
         self.third_notification = None
@@ -107,7 +110,7 @@ class User(Base):
             'first_notification': self.first_notification,
             'second_notification': self.second_notification,
             'third_notification': self.third_notification,
-            'mark_for_deletion': self.mark_for_deletion
+            'mark_for_deletion': self.mark_for_deletion,
         }
         return d
 
@@ -116,6 +119,7 @@ class User(Base):
         self.first_notification = patch_params.get('first_notification', self.first_notification)
         self.second_notification = patch_params.get('second_notification', self.second_notification)
         self.third_notification = patch_params.get('third_notification', self.third_notification)
+        self.force_delete = patch_params.get('force_delete', self.force_delete)
 
 
 class AccountSchema(Schema):
@@ -132,3 +136,4 @@ class PatchAccountSchema(Schema):
     first_notification = fields.DateTime(required=False)
     second_notification = fields.DateTime(required=False)
     third_notification = fields.DateTime(required=False)
+    force_delete = fields.Boolean(required=False)

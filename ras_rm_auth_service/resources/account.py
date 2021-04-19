@@ -1,4 +1,5 @@
 import logging
+from distutils.util import strtobool
 
 from flask import Blueprint, make_response, request, jsonify
 from marshmallow import ValidationError, EXCLUDE, RAISE
@@ -153,6 +154,8 @@ def delete_account():
         with transactional_session() as session:
             user = session.query(User).filter(func.lower(User.username) == username.lower()).one()
             user.mark_for_deletion = True
+            if 'force_delete' in params.keys():
+                user.force_delete = strtobool(params['force_delete'])
             session.commit()
     except KeyError:
         logger.exception("Missing request parameter")
