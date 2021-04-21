@@ -24,7 +24,6 @@ google-cloud-pubsub = "*"
 testfixtures = "*"
 pytest = "*"
 flake8 = "*"
-codecov = "*"
 coverage = "*"
 pytest-cov = "*"
 
