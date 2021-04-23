@@ -1,0 +1,2 @@
+ALTER TABLE auth.user
+ADD force_delete BOOLEAN  DEFAULT FALSE;
