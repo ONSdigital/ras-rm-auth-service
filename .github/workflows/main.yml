@@ -11,7 +11,6 @@ on:
     branches: [ main ]
     paths-ignore:
       - _infra/spinnaker/**
-      - _infra/helm/auth/Chart.yaml
 env:
   IMAGE: auth
   SCHEDULER_IMAGE: auth-scheduler
