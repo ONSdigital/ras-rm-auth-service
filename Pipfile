@@ -15,7 +15,7 @@ retrying = "*"
 psycopg2-binary = "*"
 flask-httpauth = "*"
 requestsdefaulter = "*"
-marshmallow = "==3.0.0rc6"
+marshmallow = "*"
 gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 requests = "*"
 google-cloud-pubsub = "*"
