@@ -46,6 +46,7 @@ jobs:
           python-version: '3.9'
       - name: Run Tests
         run: |
+          pip install pipenv
           make test
       - uses: google-github-actions/setup-gcloud@master
         with:
