@@ -14,7 +14,7 @@ install:
 lint:
 	pipenv run flake8 --max-line-length=120 --max-complexity=10 .
 
-test: lint
+test: install lint
 	pipenv check
 	pipenv run pytest
 

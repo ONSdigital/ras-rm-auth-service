@@ -3,7 +3,7 @@ import os
 
 from alembic import command
 from alembic.config import Config
-from flask import Flask, _app_ctx_stack
+from flask import Flask
 from retrying import retry, RetryError
 from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
@@ -49,11 +49,9 @@ def create_app(config=None):
 def create_database(db_connection, db_schema):
     from ras_rm_auth_service.models import models
 
-    def current_request():
-        return _app_ctx_stack.__ident_func__()
-
     engine = create_engine(db_connection)
-    session = scoped_session(sessionmaker(), scopefunc=current_request)
+    session_factory = sessionmaker(bind=engine)
+    session = scoped_session(session_factory)
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
 
