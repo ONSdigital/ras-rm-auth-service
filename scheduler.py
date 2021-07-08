@@ -1,8 +1,9 @@
-
 from ras_rm_auth_scheduler_service.logger import logger
-from ras_rm_auth_scheduler_service.process_due_deletion_notification_job import ProcessNotificationJob
+from ras_rm_auth_scheduler_service.process_due_deletion_notification_job import (
+    ProcessNotificationJob,
+)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logger.info("Scheduler processing Accounts not accessed in the last 35 months ")
     ProcessNotificationJob().process_third_notification()
     logger.info("Scheduler finished processing Accounts not accessed in last 35 months")

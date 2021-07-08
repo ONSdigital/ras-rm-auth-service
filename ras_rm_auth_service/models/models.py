@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 from distutils.util import strtobool
 
 from marshmallow import Schema, fields, validate
-from structlog import wrap_logger
 from passlib.hash import bcrypt
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
+from structlog import wrap_logger
 from werkzeug.exceptions import Unauthorized
 
 ACCOUNT_NOT_VERIFIED = "User account not verified"
@@ -19,7 +19,7 @@ logger = wrap_logger(logging.getLogger(__name__))
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
     username = Column(String(150), unique=True)
@@ -36,17 +36,17 @@ class User(Base):
     force_delete = Column(Boolean, default=False)
 
     def update_user(self, update_params):
-        self.username = update_params.get('new_username', self.username)
+        self.username = update_params.get("new_username", self.username)
 
-        if 'account_verified' in update_params:
-            self.account_verified = strtobool(update_params['account_verified'])
+        if "account_verified" in update_params:
+            self.account_verified = strtobool(update_params["account_verified"])
             if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 
-        if 'password' in update_params:
-            self.set_hashed_password(update_params['password'])
+        if "password" in update_params:
+            self.set_hashed_password(update_params["password"])
 
-        if 'account_locked' in update_params and not strtobool(update_params['account_locked']):
+        if "account_locked" in update_params and not strtobool(update_params["account_locked"]):
             self.unlock_account()
 
     def failed_login(self):
@@ -107,31 +107,31 @@ class User(Base):
 
     def to_user_dict(self):
         d = {
-            'first_notification': self.first_notification,
-            'second_notification': self.second_notification,
-            'third_notification': self.third_notification,
-            'mark_for_deletion': self.mark_for_deletion,
+            "first_notification": self.first_notification,
+            "second_notification": self.second_notification,
+            "third_notification": self.third_notification,
+            "mark_for_deletion": self.mark_for_deletion,
         }
         return d
 
     def patch_user(self, patch_params):
-        self.mark_for_deletion = patch_params.get('mark_for_deletion', self.mark_for_deletion)
-        self.first_notification = patch_params.get('first_notification', self.first_notification)
-        self.second_notification = patch_params.get('second_notification', self.second_notification)
-        self.third_notification = patch_params.get('third_notification', self.third_notification)
-        self.force_delete = patch_params.get('force_delete', self.force_delete)
+        self.mark_for_deletion = patch_params.get("mark_for_deletion", self.mark_for_deletion)
+        self.first_notification = patch_params.get("first_notification", self.first_notification)
+        self.second_notification = patch_params.get("second_notification", self.second_notification)
+        self.third_notification = patch_params.get("third_notification", self.third_notification)
+        self.force_delete = patch_params.get("force_delete", self.force_delete)
 
 
 class AccountSchema(Schema):
-    """ Account data which is required for the operation of runner itself
-    """
+    """Account data which is required for the operation of runner itself"""
+
     username = fields.String(required=True, validate=validate.Length(min=1))
     password = fields.String(required=True, validate=validate.Length(min=1))
 
 
 class PatchAccountSchema(Schema):
-    """ Account data which is required for the operation patch
-    """
+    """Account data which is required for the operation patch"""
+
     mark_for_deletion = fields.Boolean(required=False)
     first_notification = fields.DateTime(required=False)
     second_notification = fields.DateTime(required=False)

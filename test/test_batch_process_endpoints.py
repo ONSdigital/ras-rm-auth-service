@@ -1,16 +1,15 @@
 import base64
 import unittest
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import requests
-
-from ras_rm_auth_service.models import models
 from sqlalchemy.exc import SQLAlchemyError
 
 from ras_rm_auth_service.db_session_handlers import transactional_session
+from ras_rm_auth_service.models import models
 from ras_rm_auth_service.models.models import User
-from run import create_app, app
+from run import app, create_app
 
 
 def mock_response():
@@ -33,31 +32,29 @@ class TestBatchProcessEndpoints(unittest.TestCase):
     ci_upload_url = f'{app.config["PARTY_URL"]}/party-api/v1/batch/requests'
 
     def setUp(self):
-        self.app = create_app('TestingConfig')
+        self.app = create_app("TestingConfig")
         models.Base.metadata.drop_all(self.app.db)
         models.Base.metadata.create_all(self.app.db)
         self.app.db.session.commit()
         self.client = self.app.test_client()
 
-        auth = "{}:{}".format('admin', 'secret').encode('utf-8')
-        self.headers = {
-            'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
-        }
+        auth = "{}:{}".format("admin", "secret").encode("utf-8")
+        self.headers = {"Authorization": "Basic %s" % base64.b64encode(bytes(auth)).decode("ascii")}
 
     def batch_setup(self):
-        create_user_0 = self.client.post('/api/account/create', data=self.form_data_0, headers=self.headers)
+        create_user_0 = self.client.post("/api/account/create", data=self.form_data_0, headers=self.headers)
         self.assertEqual(create_user_0.status_code, 201)
         self.assertEqual(create_user_0.get_json(), {"account": self.user_0, "created": "success"})
         self.assertTrue(self.does_user_exists(self.user_0))
-        create_user_1 = self.client.post('/api/account/create', data=self.form_data_1, headers=self.headers)
+        create_user_1 = self.client.post("/api/account/create", data=self.form_data_1, headers=self.headers)
         self.assertEqual(create_user_1.status_code, 201)
         self.assertEqual(create_user_1.get_json(), {"account": self.user_1, "created": "success"})
         self.assertTrue(self.does_user_exists(self.user_1))
-        create_user_2 = self.client.post('/api/account/create', data=self.form_data_2, headers=self.headers)
+        create_user_2 = self.client.post("/api/account/create", data=self.form_data_2, headers=self.headers)
         self.assertEqual(create_user_2.status_code, 201)
         self.assertEqual(create_user_2.get_json(), {"account": self.user_2, "created": "success"})
         self.assertTrue(self.does_user_exists(self.user_2))
-        create_user_3 = self.client.post('/api/account/create', data=self.form_data_3, headers=self.headers)
+        create_user_3 = self.client.post("/api/account/create", data=self.form_data_3, headers=self.headers)
         self.assertEqual(create_user_3.status_code, 201)
         self.assertEqual(create_user_3.get_json(), {"account": self.user_3, "created": "success"})
         self.assertTrue(self.does_user_exists(self.user_3))
@@ -80,22 +77,19 @@ class TestBatchProcessEndpoints(unittest.TestCase):
     def is_third_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.third_notification).filter(
-                    User.username == user_name).first()
+                user = session.query(User.third_notification).filter(User.username == user_name).first()
                 return user.third_notification != None  # noqa
 
     def is_second_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.second_notification).filter(
-                    User.username == user_name).first()
+                user = session.query(User.second_notification).filter(User.username == user_name).first()
                 return user.second_notification != None  # noqa
 
     def is_first_notification_set(self, user_name):
         with self.app.app_context():
             with transactional_session() as session:
-                user = session.query(User.first_notification).filter(
-                    User.username == user_name).first()
+                user = session.query(User.first_notification).filter(User.username == user_name).first()
                 return user.first_notification != None  # noqa
 
     def test_batch_delete(self):
@@ -115,22 +109,16 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_0},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_1},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_3},
-                           headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_0}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_1}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_3}, headers=self.headers)
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
+        with patch("ras_rm_auth_service.batch_process_endpoints.requests.delete") as mock_request:
             mock_request.return_value = mock_response()
-            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            batch_delete_request = self.client.delete("/api/batch/account/users", headers=self.headers)
             self.assertTrue(mock_request.called)
             self.assertEqual(3, mock_request.call_count)
         # Then:
@@ -157,24 +145,18 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_0},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_1},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_3},
-                           headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_0}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_1}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_3}, headers=self.headers)
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
+        with patch("ras_rm_auth_service.batch_process_endpoints.requests.delete") as mock_request:
             mock_resp = requests.models.Response()
             mock_resp.status_code = 500
             mock_request.return_value = mock_resp
-            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            batch_delete_request = self.client.delete("/api/batch/account/users", headers=self.headers)
             self.assertTrue(mock_request.called)
             self.assertEqual(3, mock_request.call_count)
         # Then:
@@ -201,24 +183,18 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_0},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_1},
-                           headers=self.headers)
-        self.client.delete('/api/account/user',
-                           data={"username": self.user_3},
-                           headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_0}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_1}, headers=self.headers)
+        self.client.delete("/api/account/user", data={"username": self.user_3}, headers=self.headers)
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_1))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_3))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.delete') as mock_request:
+        with patch("ras_rm_auth_service.batch_process_endpoints.requests.delete") as mock_request:
             mock_resp = requests.models.Response()
             mock_resp.status_code = 404
             mock_request.return_value = mock_resp
-            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            batch_delete_request = self.client.delete("/api/batch/account/users", headers=self.headers)
             self.assertTrue(mock_request.called)
             self.assertEqual(3, mock_request.call_count)
         # Then:
@@ -242,9 +218,9 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        with patch('ras_rm_auth_service.batch_process_endpoints.requests.post') as mock_request:
+        with patch("ras_rm_auth_service.batch_process_endpoints.requests.post") as mock_request:
             mock_request.return_value = mock_response()
-            batch_delete_request = self.client.delete('/api/batch/account/users', headers=self.headers)
+            batch_delete_request = self.client.delete("/api/batch/account/users", headers=self.headers)
             # Then:
             self.assertFalse(mock_request.called)
             self.assertEqual(0, mock_request.call_count)
@@ -254,7 +230,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertTrue(self.does_user_exists(self.user_1))
         self.assertTrue(self.does_user_exists(self.user_3))
 
-    @patch('ras_rm_auth_service.batch_process_endpoints.transactional_session')
+    @patch("ras_rm_auth_service.batch_process_endpoints.transactional_session")
     def test_batch_delete_users_unable_to_commit(self, session_scope_mock):
         """
         Test Batch delete endpoint @batch.route('/users', methods=['DELETE'])
@@ -269,11 +245,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         session_scope_mock.side_effect = SQLAlchemyError()
         form_data = {"username": "testuser@email.com"}
         # When:
-        response = self.client.delete('/api/batch/account/users', data=form_data, headers=self.headers)
+        response = self.client.delete("/api/batch/account/users", data=form_data, headers=self.headers)
         self.assertEqual(response.status_code, 500)
         # Then:
-        self.assertEqual(response.get_json(), {"title": "Scheduler operation for delete users error",
-                                               "detail": "Unable to perform delete operation"})
+        self.assertEqual(
+            response.get_json(),
+            {"title": "Scheduler operation for delete users error", "detail": "Unable to perform delete operation"},
+        )
 
     def test_batch_delete_users_mark_for_deletion_when_last_login_is_not_null(self):
         """
@@ -284,10 +262,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'last_login_date': datetime(1999, 1, 1, 0, 0)}
+        criteria = {"last_login_date": datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
@@ -303,10 +281,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime(1999, 1, 1, 0, 0)}
+        criteria = {"account_creation_date": datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
@@ -323,12 +301,12 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime(1999, 1, 1, 0, 0)}
+        criteria = {"account_creation_date": datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.update_test_data(self.user_2, {'last_login_date': datetime.utcnow()})
-        self.update_test_data(self.user_2, {'account_verified': True})
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.update_test_data(self.user_2, {"last_login_date": datetime.utcnow()})
+        self.update_test_data(self.user_2, {"account_verified": True})
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
@@ -344,10 +322,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
@@ -363,13 +341,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        criteria = {'account_verified': True}
+        criteria = {"account_verified": True}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
         self.assertFalse(self.is_user_marked_for_deletion(self.user_0))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_2))
@@ -383,17 +361,17 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         """
         # Given:
         self.batch_setup()
-        criteria = {'account_creation_date': datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.client.delete('/api/batch/account/users/mark-for-deletion', headers=self.headers)
+        self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         self.assertTrue(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_1))
         self.assertFalse(self.is_user_marked_for_deletion(self.user_3))
         # When:
         form_data = {"username": self.user_0, "account_verified": "true"}
-        self.client.put('/api/account/create', data=form_data, headers=self.headers)
+        self.client.put("/api/account/create", data=form_data, headers=self.headers)
         # Then:
         self.assertFalse(self.is_user_marked_for_deletion(self.user_0))
         self.assertTrue(self.is_user_marked_for_deletion(self.user_2))
@@ -409,10 +387,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
-        criteria = {'last_login_date': _datetime_24_months_ago}
+        criteria = {"last_login_date": _datetime_24_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-first-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -431,13 +409,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
-        criteria_one = {'account_creation_date': _datetime_24_months_ago}
-        criteria = {'last_login_date': None}
+        criteria_one = {"account_creation_date": _datetime_24_months_ago}
+        criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_0, criteria_one)
         self.update_test_data(self.user_2, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-first-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -456,13 +434,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_24_months_ago = datetime.utcnow() - timedelta(days=750)
-        criteria = {'last_login_date': _datetime_24_months_ago}
-        criteria_one = {'account_creation_date': _datetime_24_months_ago}
+        criteria = {"last_login_date": _datetime_24_months_ago}
+        criteria_one = {"account_creation_date": _datetime_24_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_1, criteria_one)
         self.update_test_data(self.user_3, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-first-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -480,7 +458,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        response = self.client.get('/api/batch/account/users/eligible-for-first-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-first-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -499,10 +477,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-        criteria = {'last_login_date': _datetime_30_months_ago}
+        criteria = {"last_login_date": _datetime_30_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-second-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -521,13 +499,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-        criteria_one = {'account_creation_date': _datetime_30_months_ago}
-        criteria = {'last_login_date': None}
+        criteria_one = {"account_creation_date": _datetime_30_months_ago}
+        criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_0, criteria_one)
         self.update_test_data(self.user_2, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-second-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -546,13 +524,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_30_months_ago = datetime.utcnow() - timedelta(days=1064)
-        criteria = {'last_login_date': _datetime_30_months_ago}
-        criteria_one = {'account_creation_date': _datetime_30_months_ago}
+        criteria = {"last_login_date": _datetime_30_months_ago}
+        criteria_one = {"account_creation_date": _datetime_30_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_1, criteria_one)
         self.update_test_data(self.user_3, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-second-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -570,7 +548,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        response = self.client.get('/api/batch/account/users/eligible-for-second-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-second-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -589,10 +567,10 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
-        criteria = {'last_login_date': _datetime_35_months_ago}
+        criteria = {"last_login_date": _datetime_35_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-third-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -611,13 +589,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
-        criteria_one = {'account_creation_date': _datetime_35_months_ago}
-        criteria = {'last_login_date': None}
+        criteria_one = {"account_creation_date": _datetime_35_months_ago}
+        criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_0, criteria_one)
         self.update_test_data(self.user_2, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-third-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -636,13 +614,13 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.batch_setup()
         # When:
         _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
-        criteria = {'last_login_date': _datetime_35_months_ago}
-        criteria_one = {'account_creation_date': _datetime_35_months_ago}
+        criteria = {"last_login_date": _datetime_35_months_ago}
+        criteria_one = {"account_creation_date": _datetime_35_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.update_test_data(self.user_1, criteria_one)
         self.update_test_data(self.user_3, criteria_one)
-        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-third-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()
@@ -660,7 +638,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        response = self.client.get('/api/batch/account/users/eligible-for-third-notification', headers=self.headers)
+        response = self.client.get("/api/batch/account/users/eligible-for-third-notification", headers=self.headers)
         # Then:
         self.assertTrue(200, response.status_code)
         users = response.get_json()

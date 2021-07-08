@@ -15,14 +15,13 @@ testfixtures_warning = "inspect.getargspec()"
 
 
 class TestLoggerConfig(unittest.TestCase):
-
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
     def test_success(self, list):
-        os.environ['JSON_INDENT_LOGGING'] = '1'
+        os.environ["JSON_INDENT_LOGGING"] = "1"
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
-        logger.error('Test')
+        logger.error("Test")
         message = list.records[0].msg
 
         self.assertIn('"event": "Test",\n ', message)
@@ -33,10 +32,10 @@ class TestLoggerConfig(unittest.TestCase):
     @pytest.mark.filterwarnings(f"ignore:{testfixtures_warning}")
     @log_capture()
     def test_indent_type_error(self, list):
-        os.environ['JSON_INDENT_LOGGING'] = 'abc'
+        os.environ["JSON_INDENT_LOGGING"] = "abc"
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
-        logger.error('Test')
+        logger.error("Test")
         message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
         self.assertIn('"severity": "error", ', message)
@@ -48,7 +47,7 @@ class TestLoggerConfig(unittest.TestCase):
     def test_indent_value_error(self, list):
         logger_initial_config()
         logger = wrap_logger(logging.getLogger())
-        logger.error('Test')
+        logger.error("Test")
         message = list.records[0].msg
         self.assertIn('"event": "Test", ', message)
         self.assertIn('"severity": "error", ', message)

@@ -17,12 +17,14 @@ def transactional_session():
         session.commit()
     except SQLAlchemyError as e:
         # not logging exception as it may have sensitive data
-        logger.error("Error committing to database",
-                     error_class=e.__class__.__name__,
-                     pool_size=current_app.db.engine.pool.size(),
-                     connections_in_pool=current_app.db.engine.pool.checkedin(),
-                     connections_checked_out=current_app.db.engine.pool.checkedout(),
-                     current_overflow=current_app.db.engine.pool.overflow())
+        logger.error(
+            "Error committing to database",
+            error_class=e.__class__.__name__,
+            pool_size=current_app.db.engine.pool.size(),
+            connections_in_pool=current_app.db.engine.pool.checkedin(),
+            connections_checked_out=current_app.db.engine.pool.checkedout(),
+            current_overflow=current_app.db.engine.pool.overflow(),
+        )
         session.rollback()
         raise
     finally:
@@ -37,12 +39,14 @@ def non_transactional_session():
         yield session
     except SQLAlchemyError as e:
         # not logging exception as it may have sensitive data
-        logger.error("Error reading from database",
-                     error_class=e.__class__.__name__,
-                     pool_size=current_app.db.engine.pool.size(),
-                     connections_in_pool=current_app.db.engine.pool.checkedin(),
-                     connections_checked_out=current_app.db.engine.pool.checkedout(),
-                     current_overflow=current_app.db.engine.pool.overflow())
+        logger.error(
+            "Error reading from database",
+            error_class=e.__class__.__name__,
+            pool_size=current_app.db.engine.pool.size(),
+            connections_in_pool=current_app.db.engine.pool.checkedin(),
+            connections_checked_out=current_app.db.engine.pool.checkedout(),
+            current_overflow=current_app.db.engine.pool.overflow(),
+        )
         raise
     finally:
         session.close()
