@@ -21,9 +21,11 @@ requests = "*"
 google-cloud-pubsub = "*"
 
 [dev-packages]
+black = "==21.6b0"
 testfixtures = "*"
 pytest = "*"
 flake8 = "*"
+isort = "*"
 coverage = "*"
 pytest-cov = "*"
 

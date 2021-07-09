@@ -1,8 +1,6 @@
-
 from sqlalchemy import create_engine
 
 import config as cfg
-
 from ras_rm_auth_scheduler_service.helper import AuthDueDeletionSchedulerError
 from ras_rm_auth_scheduler_service.logger import logger
 
@@ -37,6 +35,6 @@ def get_connection():
         con.cursor().execute("SET SCHEMA '{}'".format(cfg.Config.DATABASE_SCHEMA))
     except Exception as e:
         logger.exception(e)
-        raise AuthDueDeletionSchedulerError('Unable to establish database connection.')
+        raise AuthDueDeletionSchedulerError("Unable to establish database connection.")
 
     return con
