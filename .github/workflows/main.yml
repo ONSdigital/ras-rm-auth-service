@@ -171,6 +171,8 @@ jobs:
         run: |
           docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ steps.release.outputs.version }}
           docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":latest
+          docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$SCHEDULER_IMAGE":${{ steps.release.outputs.version }}
+          docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$SCHEDULER_IMAGE":latest
 
       - name: Publish Charts
         if: github.ref == 'refs/heads/main'
