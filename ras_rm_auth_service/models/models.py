@@ -90,7 +90,7 @@ class User(Base):
         if not self.account_verified:
             raise Unauthorized(description=ACCOUNT_NOT_VERIFIED)
 
-        if self.mark_for_deletion:
+        if self.force_delete:
             raise Unauthorized(description=USER_ACCOUNT_DELETED)
 
         self.reset_failed_logins()
