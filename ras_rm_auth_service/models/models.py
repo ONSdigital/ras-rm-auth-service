@@ -12,6 +12,7 @@ from werkzeug.exceptions import Unauthorized
 ACCOUNT_NOT_VERIFIED = "User account not verified"
 UNAUTHORIZED_USER_CREDENTIALS = "Unauthorized user credentials"
 USER_ACCOUNT_LOCKED = "User account locked"
+USER_ACCOUNT_DELETED = "User account deleted"
 MAX_FAILED_LOGINS = 10
 
 Base = declarative_base()
@@ -88,6 +89,9 @@ class User(Base):
 
         if not self.account_verified:
             raise Unauthorized(description=ACCOUNT_NOT_VERIFIED)
+
+        if self.mark_for_deletion:
+            raise Unauthorized(description=USER_ACCOUNT_DELETED)
 
         self.reset_failed_logins()
         self.update_last_login_date()
