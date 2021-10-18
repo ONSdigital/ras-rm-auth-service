@@ -22,11 +22,11 @@ service:
 resources:
   application:
     requests:
-      memory: "200Mi"
       cpu: "35m"
+      memory: "200Mi"
     limits:
-      memory: "500Mi"
-      cpu: "500m"
+      cpu: "80m"
+      memory: "300Mi"
   proxy:
     requests:
       memory: "25Mi"
