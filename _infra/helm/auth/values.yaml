@@ -19,6 +19,7 @@ container:
 service:
   port: 8080
 
+# Application cpu limit is set quite high as bcrypt verification takes longer when it's not set high enough
 resources:
   application:
     requests:
