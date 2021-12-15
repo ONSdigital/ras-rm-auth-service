@@ -4,7 +4,7 @@ An API for the ras-rm services that handles account management for respondents o
 
 ## Setup
 
-Based on python 3.9
+Based on python 3.10
 
 Use [Pyenv](https://github.com/pyenv/pyenv) to manage installed Python versions
 
