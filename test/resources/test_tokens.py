@@ -276,7 +276,7 @@ class TestTokens(unittest.TestCase):
             ["a.b.c.someone@example.com", "a***********e@e*********m"],
             ["john.smith123456@londinium.ac.co.uk", "j**************6@l****************k"],
             ["me!?@example.com", "m**?@e*********m"],
-            # ["m@m.com", "m@m***m"],
+            ["m@m.com", "m@m***m"],
         ]
 
         for scenario in test_scenarios:
