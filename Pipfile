@@ -21,7 +21,7 @@ requests = "*"
 google-cloud-pubsub = "*"
 
 [dev-packages]
-black = "==21.12b0"
+black = "*"
 testfixtures = "*"
 pytest = "*"
 flake8 = "*"
