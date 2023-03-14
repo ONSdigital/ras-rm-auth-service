@@ -5,7 +5,7 @@ from distutils.util import strtobool
 from marshmallow import Schema, fields, validate
 from passlib.hash import bcrypt
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from structlog import wrap_logger
 from werkzeug.exceptions import Unauthorized
 

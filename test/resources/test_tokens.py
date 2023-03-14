@@ -249,7 +249,6 @@ class TestTokens(unittest.TestCase):
         self._test_invalid_basic_auth_credentials(auth_credentials)
 
     def test_invalid_basic_auth_password_returns_401_with_detail(self):
-
         auth_credentials = "admin:notsecret".encode("utf-8")
         self._test_invalid_basic_auth_credentials(auth_credentials)
 

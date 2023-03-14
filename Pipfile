@@ -19,6 +19,7 @@ marshmallow = "*"
 gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 requests = "*"
 google-cloud-pubsub = "*"
+werkzeug = "*"
 
 [dev-packages]
 black = "*"

@@ -58,7 +58,6 @@ class ProcessNotificationJob:
         logger.info("user data with notification sent date updated", notification=scheduler_column)
 
     def _get_eligible_users(self, url):
-
         try:
             response = requests.get(url, headers=self.headers)
             return response.json()
