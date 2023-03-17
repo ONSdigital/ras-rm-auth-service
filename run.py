@@ -70,15 +70,16 @@ def create_database(db_connection, db_schema):
         for t in models.Base.metadata.sorted_tables:
             t.schema = db_schema
 
-        q = exists(
-            select([column("schema_name")])
+        schemata_exists = exists(
+            select(column("schema_name"))
             .select_from(text("information_schema.schemata"))
             .where(text(f"schema_name = '{db_schema}'"))
         )
 
-        if not session().query(q).scalar():
+        if not session().query(schemata_exists).scalar():
             logger.info("Creating schema", schema=db_schema)
-            engine.execute(f"CREATE SCHEMA {db_schema}")
+            session().execute(text(f"CREATE SCHEMA {db_schema}"))
+            session().commit()
 
             logger.info("Creating database tables.")
             models.Base.metadata.create_all(engine)

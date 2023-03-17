@@ -12,7 +12,7 @@ Install dependencies to a new virtual environment using [Pipenv](https://docs.pi
 
 ```bash
 pip install -U pipenv
-pipenv install
+make build
 ```
 
 ## Developing
