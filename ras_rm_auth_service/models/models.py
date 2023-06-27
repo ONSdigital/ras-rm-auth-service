@@ -70,7 +70,7 @@ class User(Base):
 
     def set_hashed_password(self, string_password):
         logger.info("Changing password for account", user_id=id)
-        self.hashed_password = bcrypt.hashpw(string_password, bcrypt.gensalt(12))
+        self.hashed_password = bcrypt.hashpw(string_password.encode("utf-8"), bcrypt.gensalt(12))
 
     def is_correct_password(self, string_password):
         return bcrypt.checkpw(string_password, self.hashed_password)

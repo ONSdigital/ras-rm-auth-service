@@ -101,7 +101,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=0,
         )
 
@@ -113,7 +113,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=5,
         )
 
@@ -126,7 +126,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=0,
         )
 
@@ -141,7 +141,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=MAX_FAILED_LOGINS - 1,
         )
 
@@ -156,7 +156,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=True,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=0,
         )
 
@@ -170,7 +170,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=False,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=0,
         )
 
@@ -188,7 +188,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12)),
+            hashed_password=bcrypt.hashpw(b"password", bcrypt.gensalt(12)),
             failed_logins=0,
         )
 
