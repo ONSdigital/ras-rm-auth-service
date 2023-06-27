@@ -1,6 +1,6 @@
 import unittest
 
-from passlib.hash import bcrypt
+import bcrypt
 from werkzeug.exceptions import Unauthorized
 
 from ras_rm_auth_service.models.models import MAX_FAILED_LOGINS, User
@@ -48,7 +48,7 @@ class TestModel(unittest.TestCase):
         user = User(username="test", account_verified=False, hashed_password="h4$HedPassword")
         update_params = {"password": "newpassword"}
         user.update_user(update_params)
-        self.assertTrue(bcrypt.verify("newpassword", user.hashed_password))
+        self.assertTrue(bcrypt.checkpw("newpassword", user.hashed_password))
 
     def test_update_user_account_locked_and_account_verified(self):
         user = User(username="test", account_verified=False, account_locked=True)
@@ -85,7 +85,7 @@ class TestModel(unittest.TestCase):
     def test_set_hashed_password(self):
         user = User()
         user.set_hashed_password("password")
-        self.assertTrue(bcrypt.verify("password", user.hashed_password))
+        self.asserTrue(bcrypt.checkpw("password", user.hashed_password))
 
     def test_is_correct_password_true(self):
         user = User()

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from distutils.util import strtobool
 
-from bcrypt import bcrypt
+import bcrypt
 from marshmallow import Schema, fields, validate
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import declarative_base
