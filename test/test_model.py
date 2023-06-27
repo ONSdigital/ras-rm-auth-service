@@ -85,7 +85,7 @@ class TestModel(unittest.TestCase):
     def test_set_hashed_password(self):
         user = User()
         user.set_hashed_password("password")
-        self.asserTrue(bcrypt.checkpw(b"password", user.hashed_password))
+        self.assertTrue(bcrypt.checkpw(b"password", user.hashed_password))
 
     def test_is_correct_password_true(self):
         user = User()
