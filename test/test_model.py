@@ -99,7 +99,7 @@ class TestModel(unittest.TestCase):
 
     def test_authorise_successfully_authorised(self):
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False, account_verified=True, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=0
         )
 
         authorised = user.authorise("password")
@@ -108,7 +108,7 @@ class TestModel(unittest.TestCase):
 
     def test_authorise_successfully_authorised_resets_failed_logins(self):
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=5
+            account_locked=False, account_verified=True, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=5
         )
 
         authorised = user.authorise("password")
@@ -118,7 +118,7 @@ class TestModel(unittest.TestCase):
 
     def test_authorise_wrong_password(self):
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False, account_verified=True, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=0
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -132,7 +132,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hash("password"),
+            hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12),
             failed_logins=MAX_FAILED_LOGINS - 1,
         )
 
@@ -145,7 +145,7 @@ class TestModel(unittest.TestCase):
 
     def test_authorise_correct_password_but_user_is_locked(self):
         user = User(
-            account_locked=True, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=True, account_verified=True, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=0
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -156,7 +156,7 @@ class TestModel(unittest.TestCase):
 
     def test_authorise_correct_password_but_user_is_not_verified(self):
         user = User(
-            account_locked=False, account_verified=False, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False, account_verified=False, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=0
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -171,7 +171,7 @@ class TestModel(unittest.TestCase):
 
     def test_last_login_date_gets_filled_in_when_authorising(self):
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False, account_verified=True, hashed_password=bcrypt.hashpw("password", bcrypt.gensalt(12), failed_logins=0
         )
 
         user.authorise("password")
