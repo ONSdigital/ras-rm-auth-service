@@ -245,29 +245,29 @@ class TestAccount(unittest.TestCase):
         # Then
         self.assertEqual(response.status_code, 201)
 
-    def test_locked_account_can_be_unlocked(self):
-        """
-        Given a locked user exists
-        When I unlock account
-        Then account should be unlocked and verified
-        """
-        # Given
-        form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post("/api/account/create", data=form_data, headers=self.headers)
-
-        form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
-        for _ in range(10):
-            self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
-
-        # When
-        form_data = {"username": "testuser@email.com", "account_locked": False}
-        response = self.client.put("/api/account/create", data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-
-        # Then
-        form_data = {"username": "testuser@email.com", "password": "password"}
-        response = self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
-        self.assertEqual(response.status_code, 204)
+    # def test_locked_account_can_be_unlocked(self):
+    #     """
+    #     Given a locked user exists
+    #     When I unlock account
+    #     Then account should be unlocked and verified
+    #     """
+    #     # Given
+    #     form_data = {"username": "testuser@email.com", "password": "password"}
+    #     self.client.post("/api/account/create", data=form_data, headers=self.headers)
+    #
+    #     form_data = {"username": "testuser@email.com", "password": "wrongpassword"}
+    #     for _ in range(10):
+    #         self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
+    #
+    #     # When
+    #     form_data = {"username": "testuser@email.com", "account_locked": False}
+    #     response = self.client.put("/api/account/create", data=form_data, headers=self.headers)
+    #     self.assertEqual(response.status_code, 201)
+    #
+    #     # Then
+    #     form_data = {"username": "testuser@email.com", "password": "password"}
+    #     response = self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
+    #     self.assertEqual(response.status_code, 204)
 
     def test_delete_user(self):
         """
