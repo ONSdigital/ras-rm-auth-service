@@ -73,9 +73,9 @@ class User(Base):
         self.hashed_password = bcrypt.hashpw(string_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     def is_correct_password(self, string_password):
-        if isinstance(self.hashed_password, str):
-            self.hashed_password = self.hashed_password.encode("utf8")
-        return bcrypt.checkpw(string_password.encode("utf8"), self.hashed_password)
+        # if isinstance(self.hashed_password, str):
+        #     self.hashed_password = self.hashed_password.encode("utf8")
+        return bcrypt.checkpw(string_password.encode("utf8"), bytes(self.hashed_password, "utf-8"))
 
     def authorise(self, password):
         if not self.is_correct_password(password):
