@@ -16,28 +16,29 @@ class TestTokens(unittest.TestCase):
 
         auth = "{}:{}".format("admin", "secret").encode("utf-8")
         self.headers = {"Authorization": "Basic %s" % base64.b64encode(bytes(auth)).decode("ascii")}
+        self.username = "testuser@email.com"
 
-    # def test_verifed_user_can_login(self):
-    #     """
-    #     Given a user account has been created but not verified
-    #     When I verify the account
-    #     Then I can login
-    #     """
-    #     # Given
-    #     form_data = {"username": "testuser@email.com", "password": "password"}
-    #     self.client.post("/api/account/create", data=form_data, headers=self.headers)
-    #
-    #     # When
-    #
-    #     form_data = {"username": "testuser@email.com", "account_verified": "true"}
-    #     response = self.client.put("/api/account/create", data=form_data, headers=self.headers)
-    #
-    #     # Then
-    #     self.assertEqual(response.status_code, 201)
-    #
-    #     form_data = {"username": "testuser@email.com", "password": "password"}
-    #     response = self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
-    #     self.assertEqual(response.status_code, 204)
+    def test_verified_user_can_login(self):
+        """
+        Given a user account has been created but not verified
+        When I verify the account
+        Then I can login
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post("/api/account/create", data=form_data, headers=self.headers)
+
+        # When
+
+        form_data = {"username": "testuser@email.com", "account_verified": "true"}
+        response = self.client.put("/api/account/create", data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 201)
+
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        response = self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
+        self.assertEqual(response.status_code, 204)
 
     # def test_verifed_user_can_login_with_case_insensitive_email(self):
     #     """
