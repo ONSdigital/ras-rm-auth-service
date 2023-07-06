@@ -197,7 +197,7 @@ class TestModel(unittest.TestCase):
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hashpw(password.encode("utf08"), bcrypt.gensalt()).decode("utf-8"),
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
             failed_logins=0,
         )
 
