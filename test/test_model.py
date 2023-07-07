@@ -1,6 +1,6 @@
 import unittest
 
-from passlib.hash import bcrypt
+import bcrypt
 from werkzeug.exceptions import Unauthorized
 
 from ras_rm_auth_service.models.models import MAX_FAILED_LOGINS, User
@@ -48,7 +48,8 @@ class TestModel(unittest.TestCase):
         user = User(username="test", account_verified=False, hashed_password="h4$HedPassword")
         update_params = {"password": "newpassword"}
         user.update_user(update_params)
-        self.assertTrue(bcrypt.verify("newpassword", user.hashed_password))
+        string_password = "newpassword"
+        self.assertTrue(bcrypt.checkpw(string_password.encode("utf8"), user.hashed_password.encode("utf-8")))
 
     def test_update_user_account_locked_and_account_verified(self):
         user = User(username="test", account_verified=False, account_locked=True)
@@ -85,7 +86,8 @@ class TestModel(unittest.TestCase):
     def test_set_hashed_password(self):
         user = User()
         user.set_hashed_password("password")
-        self.assertTrue(bcrypt.verify("password", user.hashed_password))
+        string_password = "password"
+        self.assertTrue(bcrypt.checkpw(string_password.encode("utf8"), user.hashed_password.encode("utf-8")))
 
     def test_is_correct_password_true(self):
         user = User()
@@ -98,8 +100,12 @@ class TestModel(unittest.TestCase):
         self.assertFalse(user.is_correct_password("wrongpassword"))
 
     def test_authorise_successfully_authorised(self):
+        password = "password"
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False,
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=0,
         )
 
         authorised = user.authorise("password")
@@ -107,8 +113,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(True, authorised)
 
     def test_authorise_successfully_authorised_resets_failed_logins(self):
+        password = "password"
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=5
+            account_locked=False,
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=5,
         )
 
         authorised = user.authorise("password")
@@ -117,8 +127,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(0, user.failed_logins)
 
     def test_authorise_wrong_password(self):
+        password = "password"
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False,
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=0,
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -129,10 +143,11 @@ class TestModel(unittest.TestCase):
         self.assertEqual(1, user.failed_logins)
 
     def test_authorise_wrong_password_user_becomes_locked(self):
+        password = "password"
         user = User(
             account_locked=False,
             account_verified=True,
-            hashed_password=bcrypt.hash("password"),
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
             failed_logins=MAX_FAILED_LOGINS - 1,
         )
 
@@ -144,8 +159,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(MAX_FAILED_LOGINS, user.failed_logins)
 
     def test_authorise_correct_password_but_user_is_locked(self):
+        password = "password"
         user = User(
-            account_locked=True, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=True,
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=0,
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -155,8 +174,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual("User account locked", err.exception.description)
 
     def test_authorise_correct_password_but_user_is_not_verified(self):
+        password = "password"
         user = User(
-            account_locked=False, account_verified=False, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False,
+            account_verified=False,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=0,
         )
 
         with self.assertRaises(Unauthorized) as err:
@@ -170,8 +193,12 @@ class TestModel(unittest.TestCase):
         self.assertEqual(None, user.last_login_date)
 
     def test_last_login_date_gets_filled_in_when_authorising(self):
+        password = "password"
         user = User(
-            account_locked=False, account_verified=True, hashed_password=bcrypt.hash("password"), failed_logins=0
+            account_locked=False,
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            failed_logins=0,
         )
 
         user.authorise("password")

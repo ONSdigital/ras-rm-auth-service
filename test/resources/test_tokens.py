@@ -16,8 +16,9 @@ class TestTokens(unittest.TestCase):
 
         auth = "{}:{}".format("admin", "secret").encode("utf-8")
         self.headers = {"Authorization": "Basic %s" % base64.b64encode(bytes(auth)).decode("ascii")}
+        self.username = "testuser@email.com"
 
-    def test_verifed_user_can_login(self):
+    def test_verified_user_can_login(self):
         """
         Given a user account has been created but not verified
         When I verify the account

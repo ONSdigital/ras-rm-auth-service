@@ -2,8 +2,8 @@ import logging
 from datetime import datetime, timezone
 from distutils.util import strtobool
 
+import bcrypt
 from marshmallow import Schema, fields, validate
-from passlib.hash import bcrypt
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import declarative_base
 from structlog import wrap_logger
@@ -70,10 +70,10 @@ class User(Base):
 
     def set_hashed_password(self, string_password):
         logger.info("Changing password for account", user_id=id)
-        self.hashed_password = bcrypt.using(rounds=12).hash(string_password)
+        self.hashed_password = bcrypt.hashpw(string_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     def is_correct_password(self, string_password):
-        return bcrypt.verify(string_password, self.hashed_password)
+        return bcrypt.checkpw(string_password.encode("utf8"), self.hashed_password.encode("utf8"))
 
     def authorise(self, password):
         if not self.is_correct_password(password):
