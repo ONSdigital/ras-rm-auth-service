@@ -5,11 +5,15 @@ import structlog
 from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 
+from ras_rm_auth_service.decorators import retry
+
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 @contextmanager
+@retry(SQLAlchemyError)
 def transactional_session():
+    raise SQLAlchemyError
     """Provide a transactional scope around a series of operations."""
     session = current_app.db.session()
     try:
@@ -32,7 +36,9 @@ def transactional_session():
 
 
 @contextmanager
+@retry(SQLAlchemyError)
 def non_transactional_session():
+    raise SQLAlchemyError
     """Provide a non transactional scope db session."""
     session = current_app.db.session()
     try:
