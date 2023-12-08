@@ -1,5 +1,8 @@
 import logging
 
+from retrying import retry, RetryError
+from sqlalchemy.exc import OperationalError
+
 import structlog
 from flask import Blueprint, jsonify, make_response, request
 from marshmallow import EXCLUDE, ValidationError
@@ -48,7 +51,9 @@ def post_token():
 
     with transactional_session() as session:
         bound_logger.info("Searching for user")
-        user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
+        user = get_user(payload, bound_logger, session)
+        bound_logger.info("after session query")
+        bound_logger.info("helooo 1", user=user)
 
         if not user:
             bound_logger.info("User does not exist")
@@ -68,7 +73,7 @@ def post_token():
         except Unauthorized as ex:
             bound_logger.info("User is unauthorised", description=ex.description)
             return make_response(jsonify({"title": "Auth service tokens error", "detail": ex.description}), 401)
-
+    # bound_logger.info("helooo 2", user=user)
     logger.info("User credentials correct")
     return make_response("", 204)
 
@@ -91,3 +96,21 @@ def obfuscate_email(email):
     else:
         domain = f'{splitmail[1][0]}{"*"*(len(splitmail[1])-2)}{splitmail[1][-1]}'
         return f"{prefix}@{domain}"
+
+
+def retry_if_sql_error(exception):
+    return isinstance(exception, OperationalError)
+
+
+@retry(retry_on_exception=retry_if_sql_error, stop_max_attempt_number=3, wait_exponential_multiplier=1000, wrap_exception=True)
+def get_user(payload, bound_logger, session):
+    try:
+        bound_logger.info("before session query")
+        return session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
+    except RetryError as e:
+        bound_logger.info("General exception raised")
+        if e.__class__ == OperationalError:
+            raise
+        bound_logger.info("retry error raised, too many retries", error_class=e.__class__.__name__)
+        session.rollback()
+    return None
