@@ -53,16 +53,19 @@ dns:
 
 crons:
   deleteUsersScheduler:
+    suspend: true
     name: auth-delete-users-scheduled-job
-    cron: "0 0 * * *"
+    cron: "* * * * *"
     target: "/api/batch/account/users"
   markUsersForDeletionScheduler:
+    suspend: true
     name: auth-mark-users-for-deletion-scheduled-job
-    cron: "0 1 * * *"
+    cron: "* * * * *"
     target: "/api/batch/account/users/mark-for-deletion"
   dueDeletionNotificationScheduler:
+    suspend: true
     name: auth-due-deletion-notification-scheduled-job
-    cron: "0 2 * * *"
+    cron: "* * * * *"
     image: auth-scheduler
 
 notify:
