@@ -49,6 +49,7 @@ def post_token():
     with transactional_session() as session:
         bound_logger.info("Searching for user")
         user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
+        print(user)
 
         if not user:
             bound_logger.info("User does not exist")

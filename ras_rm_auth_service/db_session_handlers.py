@@ -27,6 +27,7 @@ def transactional_session():
         )
         session.rollback()
     except Exception as e:
+        # This is likely to always be an SQLAlchemyError as it's returned from SQLAlchemy but leaving as generic
         logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         session.rollback()
         raise
@@ -51,6 +52,7 @@ def non_transactional_session():
             current_overflow=current_app.db.engine.pool.overflow(),
         )
     except Exception as e:
+        # This is likely to always be an SQLAlchemyError as it's returned from SQLAlchemy but leaving as generic
         logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         raise
     finally:
