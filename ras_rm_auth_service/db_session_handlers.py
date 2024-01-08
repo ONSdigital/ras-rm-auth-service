@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 import structlog
 from flask import current_app
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -15,7 +15,7 @@ def transactional_session():
     try:
         yield session
         session.commit()
-    except SQLAlchemyError as e:
+    except OperationalError as e:
         # not logging exception as it may have sensitive data
         logger.error(
             "Error committing to database",
@@ -25,6 +25,9 @@ def transactional_session():
             connections_checked_out=current_app.db.engine.pool.checkedout(),
             current_overflow=current_app.db.engine.pool.overflow(),
         )
+        session.rollback()
+    except Exception as e:
+        logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         session.rollback()
         raise
     finally:
@@ -37,7 +40,7 @@ def non_transactional_session():
     session = current_app.db.session()
     try:
         yield session
-    except SQLAlchemyError as e:
+    except OperationalError as e:
         # not logging exception as it may have sensitive data
         logger.error(
             "Error reading from database",
@@ -47,6 +50,8 @@ def non_transactional_session():
             connections_checked_out=current_app.db.engine.pool.checkedout(),
             current_overflow=current_app.db.engine.pool.overflow(),
         )
+    except Exception as e:
+        logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         raise
     finally:
         session.close()
