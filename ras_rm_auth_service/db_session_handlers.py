@@ -3,7 +3,7 @@ from contextlib import contextmanager
 
 import structlog
 from flask import current_app
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import SQLAlchemyError
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -15,10 +15,10 @@ def transactional_session():
     try:
         yield session
         session.commit()
-    except OperationalError as e:
+    except SQLAlchemyError as e:
         # not logging exception as it may have sensitive data
         logger.error(
-            "Error committing to database",
+            f"Rolling back database session due to {e.__class__.__name__}",
             error_class=e.__class__.__name__,
             pool_size=current_app.db.engine.pool.size(),
             connections_in_pool=current_app.db.engine.pool.checkedin(),
@@ -26,9 +26,8 @@ def transactional_session():
             current_overflow=current_app.db.engine.pool.overflow(),
         )
         session.rollback()
-        raise session.OperationalError(f"Rolling back database session due to {e.__class__.__name__}")
+        raise
     except Exception as e:
-        # This is likely to always be an SQLAlchemyError as it's returned from SQLAlchemy but leaving as generic
         logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         session.rollback()
         raise
@@ -42,7 +41,7 @@ def non_transactional_session():
     session = current_app.db.session()
     try:
         yield session
-    except OperationalError as e:
+    except SQLAlchemyError as e:
         # not logging exception as it may have sensitive data
         logger.error(
             "Error reading from database",
@@ -52,8 +51,8 @@ def non_transactional_session():
             connections_checked_out=current_app.db.engine.pool.checkedout(),
             current_overflow=current_app.db.engine.pool.overflow(),
         )
+        raise SQLAlchemyError(f"Error accessing database: {e.__class__.__name__}")
     except Exception as e:
-        # This is likely to always be an SQLAlchemyError as it's returned from SQLAlchemy but leaving as generic
         logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
         raise
     finally:

@@ -74,6 +74,7 @@ def post_token():
             logger.info("User credentials correct")
             return make_response("", 204)
     except SQLAlchemyError as e:
+        logger.info(f"{e.__class__.__name__} occurred when committing to database", code=e.code)
         return make_response(jsonify({"title": AUTH_TOKEN_ERROR, "detail": e.__class__.__name__}), 500)
 
 
