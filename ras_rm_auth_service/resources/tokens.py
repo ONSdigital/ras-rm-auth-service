@@ -49,7 +49,6 @@ def post_token():
     with transactional_session() as session:
         bound_logger.info("Searching for user")
         user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
-        print(user)
 
         if not user:
             bound_logger.info("User does not exist")
@@ -70,8 +69,8 @@ def post_token():
             bound_logger.info("User is unauthorised", description=ex.description)
             return make_response(jsonify({"title": "Auth service tokens error", "detail": ex.description}), 401)
 
-    logger.info("User credentials correct")
-    return make_response("", 204)
+        logger.info("User credentials correct")
+        return make_response("", 204)
 
 
 def obfuscate_email(email):
