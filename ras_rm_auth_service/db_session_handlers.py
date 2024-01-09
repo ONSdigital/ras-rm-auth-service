@@ -51,9 +51,9 @@ def non_transactional_session():
             connections_checked_out=current_app.db.engine.pool.checkedout(),
             current_overflow=current_app.db.engine.pool.overflow(),
         )
-        raise SQLAlchemyError(f"Error accessing database: {e.__class__.__name__}")
+        raise
     except Exception as e:
-        logger.error("Unknown error raised when committing to database", error_class=e.__class__.__name__)
+        logger.error("Unknown error raised when accessing database", error_class=e.__class__.__name__)
         raise
     finally:
         session.close()
