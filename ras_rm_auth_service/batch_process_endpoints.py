@@ -21,6 +21,8 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 batch = Blueprint("batch_process", __name__, url_prefix="/api/batch/account")
 
+BATCH_PROCESS_ERROR = "Auth batch process error"
+
 
 @batch.before_request
 @auth.login_required
@@ -83,6 +85,8 @@ def get_users_eligible_for_first_notification():
     except NoResultFound:
         logger.info("No existing user eligible for first due deletion notification")
         return {}, 404
+    except SQLAlchemyError as e:
+        return make_response(jsonify({"title": BATCH_PROCESS_ERROR, "detail": e.__class__.__name__}), 500)
 
 
 @batch.route("users/eligible-for-second-notification", methods=["GET"])
@@ -113,6 +117,8 @@ def get_users_eligible_for_second_notification():
     except NoResultFound:
         logger.info("No existing user eligible for second due deletion notification")
         return {}, 404
+    except SQLAlchemyError as e:
+        return make_response(jsonify({"title": BATCH_PROCESS_ERROR, "detail": e.__class__.__name__}), 500)
 
 
 @batch.route("users/eligible-for-third-notification", methods=["GET"])
@@ -143,6 +149,8 @@ def get_users_eligible_for_third_notification():
     except NoResultFound:
         logger.info("No existing user eligible for third due deletion notification")
         return {}, 404
+    except SQLAlchemyError as e:
+        return make_response(jsonify({"title": BATCH_PROCESS_ERROR, "detail": e.__class__.__name__}), 500)
 
 
 @batch.route("users/mark-for-deletion", methods=["DELETE"])

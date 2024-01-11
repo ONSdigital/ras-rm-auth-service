@@ -1,5 +1,8 @@
 import base64
 import unittest
+from unittest.mock import patch
+
+from sqlalchemy.exc import SQLAlchemyError
 
 from ras_rm_auth_service.models import models
 from ras_rm_auth_service.resources.tokens import obfuscate_email
@@ -281,3 +284,25 @@ class TestTokens(unittest.TestCase):
 
         for scenario in test_scenarios:
             self.assertEqual(obfuscate_email(scenario[0]), scenario[1])
+
+    @patch("ras_rm_auth_service.resources.tokens.transactional_session")
+    def test_post_tokens_with_database_disconnect(self, session_mock):
+        """
+        Test the response when a database error occurs while authenticating a user
+        """
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post("/api/account/create", data=form_data, headers=self.headers)
+
+        form_data = {"username": "testuser@email.com", "account_verified": "true"}
+        self.client.put("/api/account/create", data=form_data, headers=self.headers)
+
+        session_mock.side_effect = SQLAlchemyError()
+
+        # When
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        response = self.client.post("/api/v1/tokens/", data=form_data, headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "SQLAlchemyError", "title": "Auth service tokens error"})

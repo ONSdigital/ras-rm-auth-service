@@ -416,6 +416,20 @@ class TestAccount(unittest.TestCase):
 
         self.assertEqual(response.status_code, 405)
 
+    @patch("ras_rm_auth_service.resources.account.transactional_session")
+    def test_get_user_database_disconnect(self, session_mock):
+        # Given
+        form_data = {"username": "testuser@email.com", "password": "password"}
+        self.client.post("/api/account/create", data=form_data, headers=self.headers)
+        session_mock.side_effect = SQLAlchemyError()
+
+        # When
+        response = self.client.get("/api/account/user/testuser@email.com", headers=self.headers)
+
+        # Then
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "SQLAlchemyError", "title": "Auth service get user error"})
+
     def test_patch_user_account(self):
         """
         Test undo delete user end point
