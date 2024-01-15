@@ -136,6 +136,8 @@ def get_account_by_user_name(username):
             jsonify({"title": "Auth service get user error", "detail": "This user does not exist on the Auth server"}),
             404,
         )
+    except SQLAlchemyError as e:
+        return make_response(jsonify({"title": "Auth service get user error", "detail": e.__class__.__name__}), 500)
     return jsonify(user.to_user_dict())
 
 

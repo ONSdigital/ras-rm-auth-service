@@ -11,6 +11,8 @@ from ras_rm_auth_service.models import models
 from ras_rm_auth_service.models.models import User
 from run import app, create_app
 
+BATCH_PROCESS_ERROR = "Auth batch process error"
+
 
 def mock_response():
     mock_res = MagicMock()
@@ -468,6 +470,19 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertNotIn(self.user_1, users)
         self.assertNotIn(self.user_3, users)
 
+    @patch("ras_rm_auth_service.batch_process_endpoints.transactional_session")
+    def test_get_users_eligible_for_first_notification_with_SQL_error(self, session_mock):
+        # Given:
+        self.batch_setup()
+        session_mock.side_effect = SQLAlchemyError()
+
+        # When:
+        response = self.client.get("/api/batch/account/users/eligible-for-first-notification", headers=self.headers)
+
+        # Then:
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "SQLAlchemyError", "title": BATCH_PROCESS_ERROR})
+
     def test_get_users_eligible_for_second_notification_with_last_login_not_null(self):
         """
         Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-second-notification',
@@ -558,6 +573,19 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertNotIn(self.user_1, users)
         self.assertNotIn(self.user_3, users)
 
+    @patch("ras_rm_auth_service.batch_process_endpoints.transactional_session")
+    def test_get_users_eligible_for_second_notification_with_SQL_error(self, session_mock):
+        # Given:
+        self.batch_setup()
+        session_mock.side_effect = SQLAlchemyError()
+
+        # When:
+        response = self.client.get("/api/batch/account/users/eligible-for-second-notification", headers=self.headers)
+
+        # Then:
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "SQLAlchemyError", "title": BATCH_PROCESS_ERROR})
+
     def test_get_users_eligible_for_third_notification_with_last_login_not_null(self):
         """
         Test users_eligible_for_fist_notification endpoint @batch.route('users/eligible-for-third-notification',
@@ -647,3 +675,16 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         self.assertNotIn(self.user_2, users)
         self.assertNotIn(self.user_1, users)
         self.assertNotIn(self.user_3, users)
+
+    @patch("ras_rm_auth_service.batch_process_endpoints.transactional_session")
+    def test_get_users_eligible_for_third_notification_with_SQL_error(self, session_mock):
+        # Given:
+        self.batch_setup()
+        session_mock.side_effect = SQLAlchemyError()
+
+        # When:
+        response = self.client.get("/api/batch/account/users/eligible-for-third-notification", headers=self.headers)
+
+        # Then:
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.get_json(), {"detail": "SQLAlchemyError", "title": BATCH_PROCESS_ERROR})

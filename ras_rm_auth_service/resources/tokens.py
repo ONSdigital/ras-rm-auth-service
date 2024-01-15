@@ -4,6 +4,7 @@ import structlog
 from flask import Blueprint, jsonify, make_response, request
 from marshmallow import EXCLUDE, ValidationError
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import Unauthorized
 
 from ras_rm_auth_service.basic_auth import auth
@@ -15,6 +16,8 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 tokens = Blueprint("tokens_view", __name__, url_prefix="/api/v1/tokens")
 
 account_schema = AccountSchema(unknown=EXCLUDE)
+
+AUTH_TOKEN_ERROR = "Auth service tokens error"
 
 
 @tokens.before_request
@@ -40,37 +43,38 @@ def post_token():
         payload = account_schema.load(post_params)
     except ValidationError as ex:
         logger.info("Missing request parameter", exc_info=ex)
-        return make_response(
-            jsonify({"title": "Auth service tokens error", "detail": "Missing 'username' or 'password'"}), 400
-        )
+        return make_response(jsonify({"title": AUTH_TOKEN_ERROR, "detail": "Missing 'username' or 'password'"}), 400)
 
     bound_logger = logger.bind(obfuscated_username=obfuscate_email(payload.get("username")))
 
-    with transactional_session() as session:
-        bound_logger.info("Searching for user")
-        user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
+    try:
+        with transactional_session() as session:
+            bound_logger.info("Searching for user")
+            user = session.query(User).filter(func.lower(User.username) == func.lower(payload.get("username"))).first()
 
-        if not user:
-            bound_logger.info("User does not exist")
-            return make_response(
-                jsonify(
-                    {
-                        "title": "Auth service tokens error",
-                        "detail": "Unauthorized user credentials. This user does not exist on the Auth server",
-                    }
-                ),
-                401,
-            )
+            if not user:
+                bound_logger.info("User does not exist")
+                return make_response(
+                    jsonify(
+                        {
+                            "title": AUTH_TOKEN_ERROR,
+                            "detail": "Unauthorized user credentials. This user does not exist on the Auth server",
+                        }
+                    ),
+                    401,
+                )
 
-        bound_logger.info("User found")
-        try:
-            user.authorise(payload.get("password"))
-        except Unauthorized as ex:
-            bound_logger.info("User is unauthorised", description=ex.description)
-            return make_response(jsonify({"title": "Auth service tokens error", "detail": ex.description}), 401)
+            bound_logger.info("User found")
+            try:
+                user.authorise(payload.get("password"))
+            except Unauthorized as ex:
+                bound_logger.info("User is unauthorised", description=ex.description)
+                return make_response(jsonify({"title": AUTH_TOKEN_ERROR, "detail": ex.description}), 401)
 
-    logger.info("User credentials correct")
-    return make_response("", 204)
+            logger.info("User credentials correct")
+            return make_response("", 204)
+    except SQLAlchemyError as e:
+        return make_response(jsonify({"title": AUTH_TOKEN_ERROR, "detail": e.__class__.__name__}), 500)
 
 
 def obfuscate_email(email):
