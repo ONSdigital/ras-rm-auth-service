@@ -25,20 +25,3 @@ def transactional_session():
         raise
     finally:
         session.close()
-
-
-@contextmanager
-def non_transactional_session():
-    """Provide a non transactional scope db session."""
-    session = current_app.db.session()
-    try:
-        yield session
-    except SQLAlchemyError as e:
-        # not logging exception as it may have sensitive data
-        logger.info(
-            "Error reading from database",
-            error_class=e.__class__.__name__,
-        )
-        raise
-    finally:
-        session.close()

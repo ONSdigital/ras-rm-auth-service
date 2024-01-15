@@ -417,10 +417,8 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(response.status_code, 405)
 
     @patch("ras_rm_auth_service.resources.account.transactional_session")
-    def test_get_user_database_disconnect(self, session_mock):
+    def test_get_user_with_SQL_error(self, session_mock):
         # Given
-        form_data = {"username": "testuser@email.com", "password": "password"}
-        self.client.post("/api/account/create", data=form_data, headers=self.headers)
         session_mock.side_effect = SQLAlchemyError()
 
         # When
