@@ -40,5 +40,3 @@ make start
 There are two flags i.e. `mark_for_deletion` which is a soft delete flag for the account, whereas `force_delete` is a
 hard delete. These names are confusing and is going to be amended in next iteration.
 Any deletion done via ROps or Frontstage will be considered as hard delete and `force_delet` feature flag will be updated.
-
-Force build
