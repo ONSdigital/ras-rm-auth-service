@@ -35,12 +35,15 @@ class User(Base):
     third_notification = Column(DateTime, default=None, nullable=True)
     mark_for_deletion = Column(Boolean, default=False)
     force_delete = Column(Boolean, default=False)
+    account_verification_date = Column(DateTime, default=None, nullable=True)
 
     def update_user(self, update_params):
         self.username = update_params.get("new_username", self.username)
 
         if "account_verified" in update_params:
             self.account_verified = strtobool(update_params["account_verified"])
+            if not self.account_verification_date:
+                self.account_verification_date = datetime.now(timezone.utc)
             if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 
