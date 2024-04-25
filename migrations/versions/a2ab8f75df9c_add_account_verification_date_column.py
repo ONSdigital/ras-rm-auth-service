@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("user", sa.Column("account_verification_date", sa.DateTime, nullable=True))
+    op.add_column("user", sa.Column("account_verification_date", sa.DateTime, nullable=True), schema="auth")
 
 
 def downgrade():
