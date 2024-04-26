@@ -42,8 +42,7 @@ class User(Base):
 
         if "account_verified" in update_params:
             self.account_verified = strtobool(update_params["account_verified"])
-            if not self.account_verification_date:
-                self.account_verification_date = datetime.now(timezone.utc)
+            self.account_verification_date = datetime.now(timezone.utc)
             if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 
