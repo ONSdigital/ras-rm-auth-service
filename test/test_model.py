@@ -1,15 +1,19 @@
 import unittest
+from datetime import datetime, timedelta
 
 import bcrypt
+from freezegun import freeze_time
 from werkzeug.exceptions import Unauthorized
 
 from ras_rm_auth_service.models.models import MAX_FAILED_LOGINS, User
 
+TIME_TO_FREEZE = datetime(2024, 1, 1, 12, 0, 0)
+
 
 class TestModel(unittest.TestCase):
-    def test_use_has_verified_field_returns_set_value_if_set(self):
+    def test_user_has_verified_field_returns_set_value_if_set(self):
         user = User(username="test", account_verified=True)
-        self.assertEqual(True, user.account_verified)
+        self.assertTrue(user.account_verified)
 
     def test_user_hashed_password_field_returns_value_if_set(self):
         h = "$pbkdf2-sha256$29000$N2YMIWQsBWBMae09x1jrPQ$1t8iyB2A.WF/Z5JZv.lfCIhXXN33N23OSgQYThBYRfk"
@@ -26,7 +30,7 @@ class TestModel(unittest.TestCase):
 
     def test_user_account_locked_returns_set_value_if_set(self):
         user = User(account_locked=True)
-        self.assertEqual(True, user.account_locked)
+        self.assertTrue(user.account_locked)
 
     def test_user_defaults_username_to_username_from_create(self):
         user = User(username="test")
@@ -38,11 +42,13 @@ class TestModel(unittest.TestCase):
         user.update_user(update_params)
         self.assertEqual("another-username", user.username)
 
+    @freeze_time(TIME_TO_FREEZE)
     def test_update_user_account_verified(self):
         user = User(username="test", account_verified=False)
         update_params = {"account_verified": "true"}
         user.update_user(update_params)
-        self.assertEqual(True, user.account_verified)
+        self.assertTrue(user.account_verified)
+        self.assertEqual(datetime.utcnow(), user.account_verification_date)
 
     def test_update_user_password(self):
         user = User(username="test", account_verified=False, hashed_password="h4$HedPassword")
@@ -55,8 +61,8 @@ class TestModel(unittest.TestCase):
         user = User(username="test", account_verified=False, account_locked=True)
         update_params = {"account_locked": "false"}
         user.update_user(update_params)
-        self.assertEqual(False, user.account_locked)
-        self.assertEqual(True, user.account_verified)
+        self.assertFalse(user.account_locked)
+        self.assertTrue(user.account_verified)
 
     def test_failed_login_increments_failed_logins_count(self):
         user = User(failed_logins=0)
@@ -66,7 +72,7 @@ class TestModel(unittest.TestCase):
     def test_failed_login_locks_account_after_max_failed_attempts(self):
         user = User(failed_logins=MAX_FAILED_LOGINS - 1, account_locked=False)
         user.failed_login()
-        self.assertEqual(True, user.account_locked)
+        self.assertTrue(user.account_locked)
 
     def test_unlock_account_resets_failed_logins(self):
         user = User(failed_logins=13, account_locked=True)
@@ -76,12 +82,12 @@ class TestModel(unittest.TestCase):
     def test_unlock_account_unlocks_account(self):
         user = User(failed_logins=13, account_locked=True)
         user.unlock_account()
-        self.assertEqual(False, user.account_locked)
+        self.assertFalse(user.account_locked)
 
     def test_unlock_account_verifies_account(self):
         user = User(failed_logins=13, account_verified=False, account_locked=True)
         user.unlock_account()
-        self.assertEqual(True, user.account_verified)
+        self.assertTrue(user.account_verified)
 
     def test_set_hashed_password(self):
         user = User()
@@ -110,7 +116,7 @@ class TestModel(unittest.TestCase):
 
         authorised = user.authorise("password")
 
-        self.assertEqual(True, authorised)
+        self.assertTrue(authorised)
 
     def test_authorise_successfully_authorised_resets_failed_logins(self):
         password = "password"
@@ -123,7 +129,7 @@ class TestModel(unittest.TestCase):
 
         authorised = user.authorise("password")
 
-        self.assertEqual(True, authorised)
+        self.assertTrue(authorised)
         self.assertEqual(0, user.failed_logins)
 
     def test_authorise_wrong_password(self):
@@ -136,8 +142,7 @@ class TestModel(unittest.TestCase):
         )
 
         with self.assertRaises(Unauthorized) as err:
-            authorised = user.authorise("wrongpassword")
-            self.assertEqual(False, authorised)
+            user.authorise("wrongpassword")
 
         self.assertEqual("Unauthorized user credentials", err.exception.description)
         self.assertEqual(1, user.failed_logins)
@@ -152,8 +157,7 @@ class TestModel(unittest.TestCase):
         )
 
         with self.assertRaises(Unauthorized) as err:
-            authorised = user.authorise("wrongpassword")
-            self.assertEqual(False, authorised)
+            user.authorise("wrongpassword")
 
         self.assertEqual("User account locked", err.exception.description)
         self.assertEqual(MAX_FAILED_LOGINS, user.failed_logins)
@@ -168,8 +172,7 @@ class TestModel(unittest.TestCase):
         )
 
         with self.assertRaises(Unauthorized) as err:
-            authorised = user.authorise("password")
-            self.assertEqual(False, authorised)
+            user.authorise("password")
 
         self.assertEqual("User account locked", err.exception.description)
 
@@ -183,14 +186,13 @@ class TestModel(unittest.TestCase):
         )
 
         with self.assertRaises(Unauthorized) as err:
-            authorised = user.authorise("password")
-            self.assertEqual(False, authorised)
+            user.authorise("password")
 
         self.assertEqual("User account not verified", err.exception.description)
 
     def test_last_login_date_field_exists_and_defaults_to_none(self):
         user = User(username="test")
-        self.assertEqual(None, user.last_login_date)
+        self.assertIsNone(user.last_login_date)
 
     def test_last_login_date_gets_filled_in_when_authorising(self):
         password = "password"
@@ -204,3 +206,40 @@ class TestModel(unittest.TestCase):
         user.authorise("password")
 
         self.assertIsNotNone(user.last_login_date)
+
+    @freeze_time(TIME_TO_FREEZE)
+    def test_user_verifies_email_update_also_updates_verification_timestamp(self):
+        user = User(
+            username="test", account_verified=True, account_verification_date=datetime.utcnow() - timedelta(minutes=1)
+        )
+        update_params = {"new_username": "another-username", "account_verified": "true"}
+        user.update_user(update_params)
+        self.assertEqual(user.username, update_params["new_username"])
+        self.assertTrue(user.account_verified)
+        self.assertEqual(datetime.utcnow(), user.account_verification_date)
+
+    @freeze_time(TIME_TO_FREEZE)
+    def test_user_updates_password_does_not_update_verification_timestamp(self):
+        password = "password"
+        verification_date = datetime.utcnow() - timedelta(minutes=1)
+        user = User(
+            username="test",
+            account_verified=True,
+            hashed_password=bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8"),
+            account_verification_date=verification_date,
+        )
+        update_params = {"password": "new-password", "account_locked": "false"}
+        user.update_user(update_params)
+        self.assertTrue(bcrypt.checkpw(update_params["password"].encode("utf8"), user.hashed_password.encode("utf-8")))
+        self.assertFalse(user.account_locked)
+        self.assertEqual(verification_date, user.account_verification_date)
+
+    def test_user_unlocks_account_does_not_update_verification_timestamp(self):
+        verification_date = datetime.utcnow() - timedelta(minutes=1)
+        user = User(
+            username="test", account_verified=True, account_locked=True, account_verification_date=verification_date
+        )
+        update_params = {"account_locked": "false"}
+        user.update_user(update_params)
+        self.assertFalse(user.account_locked)
+        self.assertEqual(verification_date, user.account_verification_date)

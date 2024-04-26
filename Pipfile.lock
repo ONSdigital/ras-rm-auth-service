@@ -960,6 +960,14 @@
             "markers": "python_full_version >= '3.8.1'",
             "version": "==6.1.0"
         },
+        "freezegun": {
+            "hashes": [
+                "sha256:200a64359b363aa3653d8aac289584078386c7c3da77339d257e46a01fb5c77c",
+                "sha256:ec3f4ba030e34eb6cf7e1e257308aee2c60c3d038ff35996d7475760c9ff3719"
+            ],
+            "index": "pypi",
+            "version": "==1.5.0"
+        },
         "iniconfig": {
             "hashes": [
                 "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3",
