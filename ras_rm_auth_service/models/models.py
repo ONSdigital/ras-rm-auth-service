@@ -117,6 +117,7 @@ class User(Base):
             "second_notification": self.second_notification,
             "third_notification": self.third_notification,
             "mark_for_deletion": self.mark_for_deletion,
+            "account_verification_date": self.account_verification_date,
         }
         return d
 
