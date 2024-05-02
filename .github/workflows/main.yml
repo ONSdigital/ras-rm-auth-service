@@ -35,8 +35,6 @@ jobs:
         ports:
           # Maps port 6379 on service container to the host
           - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v3
         with:
@@ -48,6 +46,8 @@ jobs:
           python-version: '3.11'
       - name: Get Dependencies
         run: |
+          docker-compose --verbose build
+          docker-compose up -d
           pip install pipenv
           pipenv install --dev
       - name: Run Tests
