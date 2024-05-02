@@ -113,11 +113,21 @@ class User(Base):
 
     def to_user_dict(self):
         d = {
-            "first_notification": self.first_notification,
-            "second_notification": self.second_notification,
-            "third_notification": self.third_notification,
+            "first_notification": (
+                self.first_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.first_notification else None
+            ),
+            "second_notification": (
+                self.second_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.second_notification else None
+            ),
+            "third_notification": (
+                self.third_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.third_notification else None
+            ),
             "mark_for_deletion": self.mark_for_deletion,
-            "account_verification_date": self.account_verification_date,
+            "account_verification_date": (
+                self.account_verification_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                if self.account_verification_date
+                else None
+            ),
         }
         return d
 
