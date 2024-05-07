@@ -244,21 +244,20 @@ class TestModel(unittest.TestCase):
         self.assertFalse(user.account_locked)
         self.assertEqual(verification_date, user.account_verification_date)
 
-    @freeze_time(TIME_TO_FREEZE)
     def test_user_dict(self):
         expected_user_dict = {
-            "first_notification": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "first_notification": datetime.utcnow(),
             "second_notification": None,
             "third_notification": None,
             "mark_for_deletion": False,
-            "account_verification_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "account_verification_date": datetime.utcnow(),
         }
         user = User(
-            first_notification=datetime.utcnow(),
-            second_notification=None,
-            third_notification=None,
-            mark_for_deletion=False,
-            account_verification_date=datetime.utcnow(),
+            first_notification=expected_user_dict["first_notification"],
+            second_notification=expected_user_dict["second_notification"],
+            third_notification=expected_user_dict["third_notification"],
+            mark_for_deletion=expected_user_dict["mark_for_deletion"],
+            account_verification_date=expected_user_dict["account_verification_date"],
         )
 
         self.assertEqual(expected_user_dict, user.to_user_dict())
