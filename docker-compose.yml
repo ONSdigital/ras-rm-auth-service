@@ -3,6 +3,7 @@ version: '3'
 services:
   db:
     container_name: postgres
+    command: -c 'max_connections=200'
     environment:
       POSTGRES_PASSWORD: postgres
     image: postgres:9.6

@@ -35,12 +35,14 @@ class User(Base):
     third_notification = Column(DateTime, default=None, nullable=True)
     mark_for_deletion = Column(Boolean, default=False)
     force_delete = Column(Boolean, default=False)
+    account_verification_date = Column(DateTime, default=None, nullable=True)
 
     def update_user(self, update_params):
         self.username = update_params.get("new_username", self.username)
 
         if "account_verified" in update_params:
             self.account_verified = strtobool(update_params["account_verified"])
+            self.account_verification_date = datetime.utcnow()
             if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 
@@ -111,10 +113,21 @@ class User(Base):
 
     def to_user_dict(self):
         d = {
-            "first_notification": self.first_notification,
-            "second_notification": self.second_notification,
-            "third_notification": self.third_notification,
+            "first_notification": (
+                self.first_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.first_notification else None
+            ),
+            "second_notification": (
+                self.second_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.second_notification else None
+            ),
+            "third_notification": (
+                self.third_notification.strftime("%Y-%m-%dT%H:%M:%SZ") if self.third_notification else None
+            ),
             "mark_for_deletion": self.mark_for_deletion,
+            "account_verification_date": (
+                self.account_verification_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                if self.account_verification_date
+                else None
+            ),
         }
         return d
 
