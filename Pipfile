@@ -28,6 +28,7 @@ flake8 = "*"
 isort = "*"
 coverage = "*"
 pytest-cov = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.11"
