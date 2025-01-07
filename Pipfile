@@ -15,10 +15,10 @@ psycopg2-binary = "*"
 flask-httpauth = "*"
 requestsdefaulter = "*"
 marshmallow = "*"
-gevent = {version = "*",platform_python_implementation = "=='CPython'"}
 requests = "*"
 google-cloud-pubsub = "*"
 werkzeug = "*"
+gevent = "*"
 
 [dev-packages]
 black = "*"
