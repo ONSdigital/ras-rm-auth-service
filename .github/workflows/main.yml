@@ -15,7 +15,7 @@ env:
   IMAGE: auth
   SCHEDULER_IMAGE: auth-scheduler
   REGISTRY_HOSTNAME: europe-west2-docker.pkg.dev
-  HOST: ${{ secrets.SPINNAKER_GOOGLE_PROJECT_ID }}
+  SPINNAKER_GOOGLE_PROJECT_ID: ${{ secrets.SPINNAKER_GOOGLE_PROJECT_ID }}
   GAR_REPOSITORY: images
   GAR_GOOGLE_PROJECT_ID: ${{ secrets.GAR_GOOGLE_PROJECT_ID }}
   CHART_DIRECTORY: _infra/helm/auth
