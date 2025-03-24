@@ -44,7 +44,8 @@ def delete_accounts():
                 logger.info(f"{marked_for_deletion_count} users marked for deletion")
                 logger.info("sending request to party service to remove ")
                 delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
-                successfully_deleted_count = marked_for_deletion_count - marked_for_deletion_users.count()
+                failed_to_delete_count = marked_for_deletion_count - marked_for_deletion_users.count()
+                successfully_deleted_count = marked_for_deletion_count - failed_to_delete_count
                 logger.info(f"Scheduler successfully deleted {successfully_deleted_count} users marked for deletion")
             else:
                 logger.info("No user marked for deletion at this time. Nothing to delete.")
