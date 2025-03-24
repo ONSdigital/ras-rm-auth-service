@@ -40,8 +40,8 @@ def delete_accounts():
         with transactional_session() as session:
             marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
             marked_for_deletion_count = marked_for_deletion_users.count()
-            logger.info(f"{marked_for_deletion_count} users marked for deletion")
             if marked_for_deletion_count > 0:
+                logger.info(f"{marked_for_deletion_count} users marked for deletion")
                 logger.info("sending request to party service to remove ")
                 delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
                 successfully_deleted_count = marked_for_deletion_count - marked_for_deletion_users.count()
