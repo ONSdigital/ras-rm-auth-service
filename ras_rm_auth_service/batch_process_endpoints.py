@@ -39,14 +39,14 @@ def delete_accounts():
         logger.info("Scheduler deleting users marked for deletion")
         with transactional_session() as session:
             marked_for_deletion_users = session.query(User).filter(User.mark_for_deletion == True)  # noqa
-            total_users_to_delete = marked_for_deletion_users.count()
-            if total_users_to_delete > 0:
-                logger.info(f"{total_users_to_delete} users marked for deletion")
+            expected_number_of_users_to_delete = marked_for_deletion_users.count()
+            if expected_number_of_users_to_delete > 0:
+                logger.info(f"{expected_number_of_users_to_delete} users marked for deletion")
                 logger.info("sending request to party service to remove ")
                 delete_party_respondents_and_auth_user(marked_for_deletion_users, session)
-                failed_to_delete_count = total_users_to_delete - marked_for_deletion_users.count()
-                successfully_deleted_count = total_users_to_delete - failed_to_delete_count
-                logger.info(f"Scheduler successfully deleted {successfully_deleted_count} users marked for deletion")
+                number_of_failed_user_deletions = expected_number_of_users_to_delete - marked_for_deletion_users.count()
+                total_users_deleted = expected_number_of_users_to_delete - number_of_failed_user_deletions
+                logger.info(f"Scheduler successfully deleted {total_users_deleted} users marked for deletion")
             else:
                 logger.info("No user marked for deletion at this time. Nothing to delete.")
 
