@@ -1,6 +1,6 @@
 import base64
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from itertools import chain
 
 import requests
@@ -63,8 +63,8 @@ def delete_accounts():
 
 @batch.route("users/eligible-for-first-notification", methods=["GET"])
 def get_users_eligible_for_first_notification():
-    _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
-    _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+    _datetime_24_months_ago = datetime.now(UTC) - timedelta(days=730)
+    _datetime_30_months_ago = datetime.now(UTC) - timedelta(days=913)
     try:
         with transactional_session() as session:
             logger.info("Getting users eligible for fist due deletion notification")
@@ -95,8 +95,8 @@ def get_users_eligible_for_first_notification():
 
 @batch.route("users/eligible-for-second-notification", methods=["GET"])
 def get_users_eligible_for_second_notification():
-    _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
-    _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
+    _datetime_30_months_ago = datetime.now(UTC) - timedelta(days=913)
+    _datetime_35_months_ago = datetime.now(UTC) - timedelta(days=1065)
     try:
         with transactional_session() as session:
             logger.info("Getting users eligible for second due deletion notification")
@@ -127,8 +127,8 @@ def get_users_eligible_for_second_notification():
 
 @batch.route("users/eligible-for-third-notification", methods=["GET"])
 def get_users_eligible_for_third_notification():
-    _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
-    _datetime_36_months_ago = datetime.utcnow() - timedelta(days=1095)
+    _datetime_35_months_ago = datetime.now(UTC) - timedelta(days=1065)
+    _datetime_36_months_ago = datetime.now(UTC) - timedelta(days=1095)
     try:
         with transactional_session() as session:
             logger.info("Getting users eligible for third due deletion notification")
@@ -168,7 +168,7 @@ def mark_for_deletion_accounts():
             logger.info("Scheduler processing Accounts not accessed in the last 36 months ")
             # process to mark account ready for deletion for
             # accounts not accessed in the last 36 months
-            _since_36_months = datetime.utcnow() - timedelta(days=1095)
+            _since_36_months = datetime.now(UTC) - timedelta(days=1095)
             _last_login_before_36_months = session.query(User).filter(
                 and_(User.last_login_date != None, User.last_login_date < _since_36_months)  # noqa
             )
@@ -181,7 +181,7 @@ def mark_for_deletion_accounts():
             # process to mark account ready for deletion for
             # accounts not been activated in the last 80 hrs.
             logger.info("Scheduler processing Account not activated for more than 80 hrs")
-            _since_80_hrs = datetime.utcnow() - timedelta(hours=80)
+            _since_80_hrs = datetime.now(UTC) - timedelta(hours=80)
             _account_not_activated_80_hrs = session.query(User).filter(
                 and_(User.account_verified == False, User.account_creation_date < _since_80_hrs)  # noqa
             )

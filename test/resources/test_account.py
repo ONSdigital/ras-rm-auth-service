@@ -1,6 +1,6 @@
 import base64
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import patch
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -522,7 +522,7 @@ class TestAccount(unittest.TestCase):
         """
         Test update first_notification
         """
-        time = datetime.utcnow()
+        time = datetime.now(UTC)
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
         self.client.post("/api/account/create", data=form_data, headers=self.headers)
@@ -540,7 +540,7 @@ class TestAccount(unittest.TestCase):
         """
         Test update first_notification
         """
-        time = datetime.utcnow()
+        time = datetime.now(UTC)
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
         self.client.post("/api/account/create", data=form_data, headers=self.headers)
@@ -558,7 +558,7 @@ class TestAccount(unittest.TestCase):
         """
         Test update first_notification
         """
-        time = datetime.utcnow()
+        time = datetime.now(UTC)
         # Given
         form_data = {"username": "testuser@email.com", "password": "password"}
         self.client.post("/api/account/create", data=form_data, headers=self.headers)

@@ -1,6 +1,6 @@
 import base64
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import requests
@@ -306,7 +306,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         criteria = {"account_creation_date": datetime(1999, 1, 1, 0, 0)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
-        self.update_test_data(self.user_2, {"last_login_date": datetime.utcnow()})
+        self.update_test_data(self.user_2, {"last_login_date": datetime.now(UTC)})
         self.update_test_data(self.user_2, {"account_verified": True})
         self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
         # Then:
@@ -324,7 +324,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.now(UTC) - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
@@ -343,7 +343,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.now(UTC) - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         criteria = {"account_verified": True}
@@ -363,7 +363,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         """
         # Given:
         self.batch_setup()
-        criteria = {"account_creation_date": datetime.utcnow() - timedelta(hours=80)}
+        criteria = {"account_creation_date": datetime.now(UTC) - timedelta(hours=80)}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
         self.client.delete("/api/batch/account/users/mark-for-deletion", headers=self.headers)
@@ -388,7 +388,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
+        _datetime_24_months_ago = datetime.now(UTC) - timedelta(days=730)
         criteria = {"last_login_date": _datetime_24_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
@@ -410,7 +410,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=730)
+        _datetime_24_months_ago = datetime.now(UTC) - timedelta(days=730)
         criteria_one = {"account_creation_date": _datetime_24_months_ago}
         criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
@@ -435,7 +435,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_24_months_ago = datetime.utcnow() - timedelta(days=750)
+        _datetime_24_months_ago = datetime.now(UTC) - timedelta(days=750)
         criteria = {"last_login_date": _datetime_24_months_ago}
         criteria_one = {"account_creation_date": _datetime_24_months_ago}
         self.update_test_data(self.user_0, criteria)
@@ -491,7 +491,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+        _datetime_30_months_ago = datetime.now(UTC) - timedelta(days=913)
         criteria = {"last_login_date": _datetime_30_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
@@ -513,7 +513,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=913)
+        _datetime_30_months_ago = datetime.now(UTC) - timedelta(days=913)
         criteria_one = {"account_creation_date": _datetime_30_months_ago}
         criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
@@ -538,7 +538,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_30_months_ago = datetime.utcnow() - timedelta(days=1064)
+        _datetime_30_months_ago = datetime.now(UTC) - timedelta(days=1064)
         criteria = {"last_login_date": _datetime_30_months_ago}
         criteria_one = {"account_creation_date": _datetime_30_months_ago}
         self.update_test_data(self.user_0, criteria)
@@ -594,7 +594,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1065)
+        _datetime_35_months_ago = datetime.now(UTC) - timedelta(days=1065)
         criteria = {"last_login_date": _datetime_35_months_ago}
         self.update_test_data(self.user_0, criteria)
         self.update_test_data(self.user_2, criteria)
@@ -616,7 +616,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
+        _datetime_35_months_ago = datetime.now(UTC) - timedelta(days=1069)
         criteria_one = {"account_creation_date": _datetime_35_months_ago}
         criteria = {"last_login_date": None}
         self.update_test_data(self.user_0, criteria)
@@ -641,7 +641,7 @@ class TestBatchProcessEndpoints(unittest.TestCase):
         # Given:
         self.batch_setup()
         # When:
-        _datetime_35_months_ago = datetime.utcnow() - timedelta(days=1069)
+        _datetime_35_months_ago = datetime.now(UTC) - timedelta(days=1069)
         criteria = {"last_login_date": _datetime_35_months_ago}
         criteria_one = {"account_creation_date": _datetime_35_months_ago}
         self.update_test_data(self.user_0, criteria)
