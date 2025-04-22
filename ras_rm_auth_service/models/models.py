@@ -1,10 +1,10 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from distutils.util import strtobool
 
 import bcrypt
 from marshmallow import Schema, fields, validate
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import declarative_base
 from structlog import wrap_logger
 from werkzeug.exceptions import Unauthorized
@@ -29,7 +29,7 @@ class User(Base):
     account_locked = Column(Boolean, default=False, nullable=False)
     failed_logins = Column(Integer, default=0, nullable=False)
     last_login_date = Column(DateTime, default=None, nullable=True)
-    account_creation_date = Column(DateTime, default=datetime.utcnow)
+    account_creation_date = Column(DateTime, default=func.now())
     first_notification = Column(DateTime, default=None, nullable=True)
     second_notification = Column(DateTime, default=None, nullable=True)
     third_notification = Column(DateTime, default=None, nullable=True)
@@ -42,7 +42,7 @@ class User(Base):
 
         if "account_verified" in update_params:
             self.account_verified = strtobool(update_params["account_verified"])
-            self.account_verification_date = datetime.utcnow()
+            self.account_verification_date = datetime.now(UTC)
             if self.mark_for_deletion and not self.force_delete:
                 self.mark_for_deletion = False
 

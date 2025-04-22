@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from freezegun import freeze_time
@@ -48,7 +48,7 @@ class TestModel(unittest.TestCase):
         update_params = {"account_verified": "true"}
         user.update_user(update_params)
         self.assertTrue(user.account_verified)
-        self.assertEqual(datetime.utcnow(), user.account_verification_date)
+        self.assertEqual(datetime.now(UTC), user.account_verification_date)
 
     def test_update_user_password(self):
         user = User(username="test", account_verified=False, hashed_password="h4$HedPassword")
@@ -210,18 +210,18 @@ class TestModel(unittest.TestCase):
     @freeze_time(TIME_TO_FREEZE)
     def test_user_verifies_email_update_also_updates_verification_timestamp(self):
         user = User(
-            username="test", account_verified=True, account_verification_date=datetime.utcnow() - timedelta(minutes=1)
+            username="test", account_verified=True, account_verification_date=datetime.now(UTC) - timedelta(minutes=1)
         )
         update_params = {"new_username": "another-username", "account_verified": "true"}
         user.update_user(update_params)
         self.assertEqual(user.username, update_params["new_username"])
         self.assertTrue(user.account_verified)
-        self.assertEqual(datetime.utcnow(), user.account_verification_date)
+        self.assertEqual(datetime.now(UTC), user.account_verification_date)
 
     @freeze_time(TIME_TO_FREEZE)
     def test_user_updates_password_does_not_update_verification_timestamp(self):
         password = "password"
-        verification_date = datetime.utcnow() - timedelta(minutes=1)
+        verification_date = datetime.now(UTC) - timedelta(minutes=1)
         user = User(
             username="test",
             account_verified=True,
@@ -235,7 +235,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(verification_date, user.account_verification_date)
 
     def test_user_unlocks_account_does_not_update_verification_timestamp(self):
-        verification_date = datetime.utcnow() - timedelta(minutes=1)
+        verification_date = datetime.now(UTC) - timedelta(minutes=1)
         user = User(
             username="test", account_verified=True, account_locked=True, account_verification_date=verification_date
         )
@@ -247,18 +247,18 @@ class TestModel(unittest.TestCase):
     @freeze_time(TIME_TO_FREEZE)
     def test_user_dict(self):
         expected_user_dict = {
-            "first_notification": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "first_notification": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "second_notification": None,
             "third_notification": None,
             "mark_for_deletion": False,
-            "account_verification_date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "account_verification_date": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
         user = User(
-            first_notification=datetime.utcnow(),
+            first_notification=datetime.now(UTC),
             second_notification=None,
             third_notification=None,
             mark_for_deletion=False,
-            account_verification_date=datetime.utcnow(),
+            account_verification_date=datetime.now(UTC),
         )
 
         self.assertEqual(expected_user_dict, user.to_user_dict())

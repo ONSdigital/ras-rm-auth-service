@@ -1,5 +1,5 @@
 import base64
-from datetime import datetime
+from datetime import UTC, datetime
 
 import requests
 
@@ -49,7 +49,7 @@ class ProcessNotificationJob:
 
     def _update_user(self, user, scheduler_column):
         logger.info("Updating user data with notification sent date", notification=scheduler_column)
-        form_data = {scheduler_column: datetime.utcnow()}
+        form_data = {scheduler_column: datetime.now(UTC)}
         try:
             requests.patch(f"{self.patch_url}/{user}", data=form_data, headers=self.headers)
         except requests.exceptions.HTTPError as error:
