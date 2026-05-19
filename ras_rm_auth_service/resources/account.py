@@ -1,5 +1,4 @@
 import logging
-from distutils.util import strtobool
 
 import structlog
 from flask import Blueprint, jsonify, make_response, request
@@ -12,6 +11,7 @@ from ras_rm_auth_service.basic_auth import auth
 from ras_rm_auth_service.db_session_handlers import transactional_session
 from ras_rm_auth_service.models.models import AccountSchema, PatchAccountSchema, User
 from ras_rm_auth_service.resources.tokens import obfuscate_email
+from strtobool import strtobool
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
