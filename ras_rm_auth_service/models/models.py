@@ -1,6 +1,5 @@
 import logging
 from datetime import UTC, datetime, timezone
-from distutils.util import strtobool
 
 import bcrypt
 from marshmallow import Schema, fields, validate
@@ -8,6 +7,8 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 from sqlalchemy.orm import declarative_base
 from structlog import wrap_logger
 from werkzeug.exceptions import Unauthorized
+
+from strtobool import strtobool
 
 ACCOUNT_NOT_VERIFIED = "User account not verified"
 UNAUTHORIZED_USER_CREDENTIALS = "Unauthorized user credentials"
