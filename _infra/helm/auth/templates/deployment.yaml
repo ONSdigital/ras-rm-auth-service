@@ -19,9 +19,11 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
-      serviceAccountName: ras-rm-k8s-services
+      serviceAccountName: {{ .Values.serviceAccount.name }}
       imagePullSecrets:
-        - name: gar-secret
+          {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true"
       containers:
         {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-proxy
